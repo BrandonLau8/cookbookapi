@@ -7,6 +7,9 @@ import com.cookbook.api.services.IngredientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class IngredientServiceImpl implements IngredientService {
     private IngredientRepository ingredientRepository;
@@ -32,4 +35,29 @@ public class IngredientServiceImpl implements IngredientService {
         ingredientResponse.setQuantity(ingredient.getQuantity());
         return ingredientResponse;
     }
+
+    @Override
+    public List<IngredientDto> getAllIngredients() {
+        List<Ingredient> ingredient = ingredientRepository.findAll();
+        return ingredient.stream().map((x)->mapToDto(x)).collect(Collectors.toList());
+    }
+
+    private IngredientDto mapToDto(Ingredient ingredient) {
+        IngredientDto ingredientDto = new IngredientDto();
+        ingredientDto.setId(ingredient.getId());
+        ingredientDto.setName(ingredient.getName());
+        ingredientDto.setQuantity(ingredient.getQuantity());
+        ingredientDto.setDescription(ingredient.getDescription());
+        return ingredientDto;
+    }
+
+    private Ingredient mapToEntity(IngredientDto ingredientDto) {
+        Ingredient ingredient = new Ingredient();
+        ingredient.setName(ingredientDto.getName());
+        ingredient.setQuantity(ingredientDto.getQuantity());
+        ingredient.setDescription(ingredientDto.getDescription());
+        return ingredient;
+    }
+
+
 }
