@@ -48,7 +48,7 @@ public class FoodController {
 
     @DeleteMapping("food/{id}/delete")
     public ResponseEntity<String> deleteFood(@PathVariable("id") int foodId) {
-        foodService.deleteFoodById(foodId);
+        foodService.deleteFood(foodId);
         return new ResponseEntity<>("Food Deleted", HttpStatus.OK);
     }
 }

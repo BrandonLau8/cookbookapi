@@ -10,7 +10,5 @@ public interface FoodService {
     List<FoodDto> getAllFood();
     FoodDto getFoodById(int id);
     FoodDto updateFood(FoodDto foodDto, int id);
-    void deleteFoodById(int id);
-
     void deleteFood(int id);
 }

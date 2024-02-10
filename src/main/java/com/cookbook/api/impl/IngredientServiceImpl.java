@@ -1,6 +1,7 @@
 package com.cookbook.api.impl;
 
 import com.cookbook.api.dto.IngredientDto;
+import com.cookbook.api.exceptions.IngredientNotFoundException;
 import com.cookbook.api.models.Ingredient;
 import com.cookbook.api.repository.IngredientRepository;
 import com.cookbook.api.services.IngredientService;
@@ -29,10 +30,10 @@ public class IngredientServiceImpl implements IngredientService {
         Ingredient newIngredient = ingredientRepository.save(ingredient);
 
         IngredientDto ingredientResponse = new IngredientDto();
-        ingredientResponse.setId(ingredient.getId());
-        ingredientResponse.setName(ingredient.getName());
-        ingredientResponse.setDescription(ingredient.getDescription());
-        ingredientResponse.setQuantity(ingredient.getQuantity());
+        ingredientResponse.setId(newIngredient.getId());
+        ingredientResponse.setName(newIngredient.getName());
+        ingredientResponse.setDescription(newIngredient.getDescription());
+        ingredientResponse.setQuantity(newIngredient.getQuantity());
         return ingredientResponse;
     }
 
@@ -40,6 +41,32 @@ public class IngredientServiceImpl implements IngredientService {
     public List<IngredientDto> getAllIngredients() {
         List<Ingredient> ingredient = ingredientRepository.findAll();
         return ingredient.stream().map((x)->mapToDto(x)).collect(Collectors.toList());
+    }
+
+    @Override
+    public IngredientDto getIngredientById(int id) {
+        Ingredient ingredient = ingredientRepository.findById(id).orElseThrow(
+                () -> new IngredientNotFoundException("Ingredient not found by Id."));
+        return mapToDto(ingredient);
+    }
+
+    @Override
+    public IngredientDto updateIngredient(IngredientDto ingredientDto, int id) {
+        Ingredient ingredient = ingredientRepository.findById(id).orElseThrow(
+                ()-> new IngredientNotFoundException("Ingredient not found by Id."));
+        ingredient.setName(ingredientDto.getName());
+        ingredient.setDescription(ingredientDto.getDescription());
+        ingredient.setQuantity(ingredientDto.getQuantity());
+
+        Ingredient updatedIngredient = ingredientRepository.save(ingredient);
+        return mapToDto(updatedIngredient);
+    }
+
+    @Override
+    public void deleteIngredient(int id) {
+        Ingredient ingredient = ingredientRepository.findById(id).orElseThrow(
+                ()->new IngredientNotFoundException("Ingredient not found by id"));
+        ingredientRepository.delete(ingredient);
     }
 
     private IngredientDto mapToDto(Ingredient ingredient) {
