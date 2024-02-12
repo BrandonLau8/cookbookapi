@@ -1,6 +1,7 @@
 package com.cookbook.api.controllers;
 
 import com.cookbook.api.dto.FoodDto;
+import com.cookbook.api.dto.FoodResponse;
 import com.cookbook.api.models.Food;
 import com.cookbook.api.services.FoodService;
 import org.apache.coyote.Response;
@@ -25,8 +26,11 @@ public class FoodController {
 
     @GetMapping("foods")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<List<FoodDto>> getFoods() {
-        return new ResponseEntity<>(foodService.getAllFood(), HttpStatus.OK);
+    public ResponseEntity <FoodResponse> getFoods(
+            @RequestParam(value = "pageNo", defaultValue = "0", required = false) int pageNo,
+            @RequestParam(value = "pageSize", defaultValue = "10", required = false) int pageSize
+    ) {
+        return new ResponseEntity<>(foodService.getAllFood(pageNo, pageSize), HttpStatus.OK);
     }
 
     @GetMapping("food/{id}")

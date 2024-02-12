@@ -1,11 +1,15 @@
-package com.cookbook.api.impl;
+package com.cookbook.api.services.impl;
 
 import com.cookbook.api.dto.FoodDto;
+import com.cookbook.api.dto.FoodResponse;
 import com.cookbook.api.exceptions.FoodNotFoundException;
 import com.cookbook.api.models.Food;
 import com.cookbook.api.repository.FoodRepository;
 import com.cookbook.api.services.FoodService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -33,11 +37,20 @@ public class FoodServiceImpl implements FoodService {
     }
 
     @Override
-    public List<FoodDto> getAllFood() {
-        List<Food> food = foodRepository.findAll();
-        //Food food333 = foodRepository.findById(333).orElseThrow(()->new FoodNotFoundException("Food not found by id"));
-        //mapping converts values to FoodDto object.
-        return food.stream().map(x->mapToDto(x)).collect(Collectors.toList());
+    public FoodResponse getAllFood(int pageNo, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize);
+        Page<Food> foods = foodRepository.findAll(pageable);
+        List<Food> listOfFood = foods.getContent();
+        List<FoodDto> content = listOfFood.stream().map(x->mapToDto(x)).collect(Collectors.toList());
+
+        FoodResponse foodResponse = new FoodResponse();
+        foodResponse.setContent(content);
+        foodResponse.setPageNo(foods.getNumber());
+        foodResponse.setPageSize(foods.getSize());
+        foodResponse.setTotalElements(foods.getTotalElements());
+        foodResponse.setTotalPages(foods.getTotalPages());
+        foodResponse.setLast(foods.isLast());
+        return foodResponse;
     }
 
     @Override

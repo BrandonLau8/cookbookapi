@@ -1,9 +1,6 @@
 package com.cookbook.api.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,4 +16,8 @@ public class Ingredient {
     private String name;
     private int quantity;
     private String description;
+
+    @ManyToOne(fetch = FetchType.LAZY) //NOT load relationship but not entire object
+    @JoinColumn(name = "food_id")
+    private Food food;
 }

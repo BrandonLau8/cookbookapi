@@ -1,15 +1,16 @@
 package com.cookbook.api.services;
 
 import com.cookbook.api.dto.IngredientDto;
+import com.cookbook.api.dto.IngredientResponse;
 
 import java.util.List;
 
 public interface IngredientService {
-    IngredientDto createIngredient(IngredientDto ingredientDto);
+    IngredientDto createIngredient(int foodId, IngredientDto ingredientDto);
 
-    List<IngredientDto> getAllIngredients();
-    IngredientDto getIngredientById(int id);
+    IngredientResponse getIngredientsByFoodId(int foodId, int pageNo, int pageSize);
+    IngredientDto getIngredientById(int foodId, int ingredientId);
 
-    IngredientDto updateIngredient(IngredientDto ingredientDto, int id);
-    void deleteIngredient(int id);
+    IngredientDto updateIngredient(int foodId, IngredientDto ingredientDto, int ingredientId);
+    void deleteIngredient(int foodId, int ingredientId);
 }
