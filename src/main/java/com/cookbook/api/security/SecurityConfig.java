@@ -52,7 +52,9 @@ public class SecurityConfig {
                 //usernamepassword authen filter
                 .authorizeHttpRequests(authorize -> authorize
                         //learn about mvcMatchers as well
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/**").permitAll()
+                        .requestMatchers("/api/food/**").permitAll()
+
 
                         //any endpoint in your app requires that the security context at minimum be authen in order to allow it
                         .anyRequest().authenticated()

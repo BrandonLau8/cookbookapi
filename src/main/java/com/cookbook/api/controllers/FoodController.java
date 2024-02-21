@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@CrossOrigin("*")
 @RestController //indicates to Spring this class will handle HTTP req/res
 @RequestMapping("/api/") //add "api" to route
 public class FoodController {
@@ -28,7 +29,7 @@ public class FoodController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity <FoodResponse> getFoods(
             @RequestParam(value = "pageNo", defaultValue = "0", required = false) int pageNo,
-            @RequestParam(value = "pageSize", defaultValue = "10", required = false) int pageSize
+            @RequestParam(value = "pageSize", defaultValue = "20", required = false) int pageSize
     ) {
         return new ResponseEntity<>(foodService.getAllFood(pageNo, pageSize), HttpStatus.OK);
     }
@@ -44,7 +45,7 @@ public class FoodController {
         return new ResponseEntity<>(foodService.createFood(foodDto), HttpStatus.CREATED);
     }
 
-    @PutMapping("food/{id}/update")
+    @PatchMapping("food/{id}/update")
     public ResponseEntity<FoodDto> updateFood(@RequestBody FoodDto foodDto, @PathVariable("id") int foodId) {
         FoodDto foodResponse = foodService.updateFood(foodDto, foodId);
         return new ResponseEntity<>(foodResponse, HttpStatus.OK);
@@ -54,5 +55,11 @@ public class FoodController {
     public ResponseEntity<String> deleteFood(@PathVariable("id") int foodId) {
         foodService.deleteFood(foodId);
         return new ResponseEntity<>("Food Deleted", HttpStatus.OK);
+    }
+
+    @DeleteMapping("food/deleteall")
+    public ResponseEntity<String> deleteAllFood() {
+        foodService.deleteAllFood();
+        return new ResponseEntity<>("Food All Deleted", HttpStatus.OK);
     }
 }

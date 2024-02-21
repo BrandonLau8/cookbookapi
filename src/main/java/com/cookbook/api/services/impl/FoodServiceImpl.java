@@ -12,7 +12,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -61,9 +63,12 @@ public class FoodServiceImpl implements FoodService {
 
     @Override
     public FoodDto updateFood(FoodDto foodDto, int id) {
+
         Food food = foodRepository.findById(id).orElseThrow(()->
                 new FoodNotFoundException("Food not found by Id"));
-        food.setName(foodDto.getName());
+
+            food.setName(foodDto.getName());
+
 
         Food updatedFood = foodRepository.save(food);
         return mapToDto(updatedFood);
@@ -74,6 +79,11 @@ public class FoodServiceImpl implements FoodService {
         Food food = foodRepository.findById(id).orElseThrow(()->
                 new FoodNotFoundException("Food not found by Id"));
         foodRepository.delete(food);
+    }
+
+    @Override
+    public void deleteAllFood() {
+        foodRepository.deleteAll();
     }
 
     private FoodDto mapToDto(Food food) {
