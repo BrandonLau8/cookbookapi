@@ -31,8 +31,10 @@ public class FoodController {
             @RequestParam(value = "pageNo", defaultValue = "0", required = false) int pageNo,
             @RequestParam(value = "pageSize", defaultValue = "20", required = false) int pageSize
     ) {
+
         return new ResponseEntity<>(foodService.getAllFood(pageNo, pageSize), HttpStatus.OK);
     }
+
 
     @GetMapping("food/{id}")
     public ResponseEntity<FoodDto> getFoodById(@PathVariable int id) {
@@ -45,9 +47,10 @@ public class FoodController {
         return new ResponseEntity<>(foodService.createFood(foodDto), HttpStatus.CREATED);
     }
 
-    @PatchMapping("food/{id}/update")
+    @PutMapping("food/{id}/update")
     public ResponseEntity<FoodDto> updateFood(@RequestBody FoodDto foodDto, @PathVariable("id") int foodId) {
         FoodDto foodResponse = foodService.updateFood(foodDto, foodId);
+
         return new ResponseEntity<>(foodResponse, HttpStatus.OK);
     }
 

@@ -9,6 +9,7 @@ import java.util.List;
 public interface FoodService {
     FoodDto createFood(FoodDto foodDto);
     FoodResponse getAllFood(int pageNo, int pageSize);
+
     FoodDto getFoodById(int id);
     FoodDto updateFood(FoodDto foodDto, int id);
     void deleteFood(int id);

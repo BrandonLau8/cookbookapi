@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -35,15 +36,19 @@ public class FoodServiceImpl implements FoodService {
         FoodDto foodResponse = new FoodDto();
         foodResponse.setId(newFood.getId());
         foodResponse.setName(newFood.getName());
+
         return foodResponse;
     }
 
     @Override
     public FoodResponse getAllFood(int pageNo, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNo, pageSize);
+        Sort sort = Sort.by(Sort.Direction.ASC, "id");
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
         Page<Food> foods = foodRepository.findAll(pageable);
         List<Food> listOfFood = foods.getContent();
-        List<FoodDto> content = listOfFood.stream().map(x->mapToDto(x)).collect(Collectors.toList());
+        System.out.println(pageable);
+
+        List<FoodDto> content = listOfFood.stream().map(this::mapToDto).collect(Collectors.toList());
 
         FoodResponse foodResponse = new FoodResponse();
         foodResponse.setContent(content);
@@ -69,8 +74,8 @@ public class FoodServiceImpl implements FoodService {
 
             food.setName(foodDto.getName());
 
-
         Food updatedFood = foodRepository.save(food);
+
         return mapToDto(updatedFood);
     }
 
