@@ -26,6 +26,13 @@ public class FoodServiceImpl implements FoodService {
         this.foodRepository = foodRepository;
     }
 
+//    @Override
+//    public List<Food> searchFoods(String query) {
+//        List<Food> foods = foodRepository.searchFoods(query);
+//
+//        return foods;
+//    }
+
     @Override
     public FoodDto createFood(FoodDto foodDto) {
         Food food = new Food();

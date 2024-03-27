@@ -7,6 +7,7 @@ import com.cookbook.api.models.Food;
 import java.util.List;
 
 public interface FoodService {
+//    List<Food> searchFoods(String query);
     FoodDto createFood(FoodDto foodDto);
     FoodResponse getAllFood(int pageNo, int pageSize);
 

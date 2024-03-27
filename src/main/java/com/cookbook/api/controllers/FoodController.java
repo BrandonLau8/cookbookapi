@@ -25,6 +25,11 @@ public class FoodController {
         this.foodService = foodService;
     }
 
+//    @GetMapping("/food/search")
+//    public ResponseEntity<List<Food>> searchFoods(@RequestParam("query") String query) {
+//        return new ResponseEntity<>(foodService.searchFoods(query), HttpStatus.OK);
+//    }
+
     @GetMapping("foods")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity <FoodResponse> getFoods(
