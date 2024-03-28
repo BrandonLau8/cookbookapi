@@ -6,18 +6,13 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-@CrossOrigin("*")
 @RestController
-@RequestMapping("/auth")
 public class TestController {
 
     @GetMapping("/login")
    public String login() {
         return "login";
     }
-
-    @PostMapping("/login")
-    public
 
 //    @GetMapping("/")
 //    public String home() {
