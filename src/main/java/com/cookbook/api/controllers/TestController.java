@@ -9,9 +9,10 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class TestController {
 
-    @GetMapping("/login")
+    @CrossOrigin("*")
+    @GetMapping("/")
    public String login() {
-        return "login";
+        return "hi";
     }
 
 //    @GetMapping("/")
