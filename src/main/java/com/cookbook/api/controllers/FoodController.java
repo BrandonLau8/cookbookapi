@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@CrossOrigin("*")
 @RestController //indicates to Spring this class will handle HTTP req/res
 @RequestMapping("/api/") //add "api" to route
 public class FoodController {

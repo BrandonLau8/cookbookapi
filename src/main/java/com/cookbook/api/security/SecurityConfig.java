@@ -51,9 +51,10 @@ public class SecurityConfig {
                 //usernamepassword authen filter
                 .authorizeHttpRequests(authorize -> authorize
 //                        //learn about mvcMatchers as well
-//                        .requestMatchers("/api/**").permitAll()
+//                        .requestMatchers("/api/**").hasAuthority("USER")
 //                        .requestMatchers("/api/food/**").permitAll()
-
+                                .requestMatchers("/auth/login").permitAll()
+                        .requestMatchers("/auth/user").hasAuthority("USER")
 
                         //any endpoint in your app requires that the security context at minimum be authen in order to allow it
                         .anyRequest().authenticated()
@@ -96,20 +97,20 @@ public class SecurityConfig {
 //    }
 
     //representation of a user in spring security. entry point to database
-//    @Bean
-//    public UserDetailsService users() {
-//        UserDetails admin = User.builder()
-//                .username("admin")
-//                .password("password")
-//                .roles("ADMIN")
-//                .build();
-//        UserDetails user = User.builder()
-//                .username("user")
-//                .password("password")
-//                .roles("USER")
-//                .build();
-//        return new InMemoryUserDetailsManager(admin, user); //tie into userdetail service without users
-//    }
+    @Bean
+    public UserDetailsService users() {
+        UserDetails admin = User.builder()
+                .username("admin")
+                .password("password")
+                .roles("ADMIN", "USER")
+                .build();
+        UserDetails user = User.builder()
+                .username("user")
+                .password("password")
+                .roles("USER")
+                .build();
+        return new InMemoryUserDetailsManager(admin, user); //tie into userdetail service without users
+    }
 
 //    //Core Interface that provides the ability to authenticate a user.
 //    @Bean
