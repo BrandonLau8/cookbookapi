@@ -53,38 +53,12 @@ public class SecurityConfig {
 //                        //learn about mvcMatchers as well
 //                        .requestMatchers("/api/**").hasAuthority("USER")
 //                        .requestMatchers("/api/food/**").permitAll()
-                                .requestMatchers("/auth/login").permitAll()
-                        .requestMatchers("/auth/user").hasAuthority("USER")
+                                .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
 
                         //any endpoint in your app requires that the security context at minimum be authen in order to allow it
                         .anyRequest().authenticated()
-                )
-
-                //basic authen filter
-                .httpBasic(Customizer.withDefaults())
-
-                //autho filter
-                .formLogin(form -> form
-                        .loginPage("http://localhost:5173/login")
-                        .permitAll()
                 );
-
-
-//        http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
-    }
-
-    @Bean
-    public WebMvcConfigurer corsConfigurer() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:5173") // Adjust this to your frontend URL
-                        .allowedMethods("GET", "POST", "PUT", "DELETE")
-                        .allowCredentials(true);
-            }
-        };
     }
 
 
@@ -96,28 +70,12 @@ public class SecurityConfig {
 //        this.jwtAuthEntryPoint = jwtAuthEntryPoint;
 //    }
 
-    //representation of a user in spring security. entry point to database
+    //Core Interface that provides the ability to authenticate a user.
     @Bean
-    public UserDetailsService users() {
-        UserDetails admin = User.builder()
-                .username("admin")
-                .password("password")
-                .roles("ADMIN", "USER")
-                .build();
-        UserDetails user = User.builder()
-                .username("user")
-                .password("password")
-                .roles("USER")
-                .build();
-        return new InMemoryUserDetailsManager(admin, user); //tie into userdetail service without users
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
-
-//    //Core Interface that provides the ability to authenticate a user.
-//    @Bean
-//    public AuthenticationManager authenticationManager(
-//            AuthenticationConfiguration authenticationConfiguration) throws Exception {
-//        return authenticationConfiguration.getAuthenticationManager();
-//    }
 //
 //    @Bean
 //    PasswordEncoder passwordEncoder() {
