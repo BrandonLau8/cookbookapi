@@ -1,10 +1,13 @@
 package com.cookbook.api.security;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -14,6 +17,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
@@ -26,19 +30,18 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.Arrays;
 
+@RequiredArgsConstructor
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-//    private JwtAuthEntryPoint jwtAuthEntryPoint;
-//    private CustomUserDetailsService userDetailsService;
 
     @Bean //manage the lifecycle of the bean.
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
 //                //protect against cross site forgery using both sync token pattern or same site attribute.
 //                //during dev, disabling helps
-//                .csrf(csrf->csrf.disable())
+                .csrf(csrf->csrf.disable())
 //
 //                //ability to have exception handling
 //                .exceptionHandling(exceptionHandling->
@@ -49,41 +52,46 @@ public class SecurityConfig {
 //                        sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 //usernamepassword authen filter
-                .authorizeHttpRequests(authorize -> authorize
+                .authorizeHttpRequests(requests -> requests
 //                        //learn about mvcMatchers as well
 //                        .requestMatchers("/api/**").hasAuthority("USER")
 //                        .requestMatchers("/api/food/**").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/login").permitAll()
 
-                        //any endpoint in your app requires that the security context at minimum be authen in order to allow it
-                        .anyRequest().authenticated()
+                                //any endpoint in your app requires that the security context at minimum be authen in order to allow it
+                                .anyRequest().authenticated()
                 );
         return http.build();
     }
 
-
-//    @Autowired
-//    public SecurityConfig(
-//            CustomUserDetailsService userDetailsService,
-//            JwtAuthEntryPoint jwtAuthEntryPoint) {
-//        this.userDetailsService = userDetailsService;
-//        this.jwtAuthEntryPoint = jwtAuthEntryPoint;
-//    }
-
-    //Core Interface that provides the ability to authenticate a user.
     @Bean
     public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
+            UserDetailsService userDetailsService,
+            PasswordEncoder passwordEncoder) {
+        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+        authenticationProvider.setUserDetailsService(userDetailsService);
+        authenticationProvider.setPasswordEncoder(passwordEncoder);
+
+        return new ProviderManager(authenticationProvider);
     }
-//
-//    @Bean
-//    PasswordEncoder passwordEncoder() {
-//        return new BCryptPasswordEncoder();
-//    }
-//
-//    @Bean
-//    public JWTAuthenticationFilter jwtAuthenticationFilter() {
-//        return new JWTAuthenticationFilter();
-//    }
+
+    @Bean
+    public UserDetailsService userDetailsService() {
+        UserDetails userDetails = User.withDefaultPasswordEncoder()
+                .username("user")
+                .password("password")
+                .roles("USER")
+                .build();
+
+        return new InMemoryUserDetailsManager(userDetails);
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+    }
 }
+
+
+
+
