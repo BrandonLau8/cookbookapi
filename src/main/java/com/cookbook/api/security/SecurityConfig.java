@@ -30,11 +30,16 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.Arrays;
 
-@RequiredArgsConstructor
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private final CorsConfigurationSource corsConfigurationSource;
+
+    @Autowired
+    public SecurityConfig(CorsConfigurationSource corsConfigurationSource) {
+        this.corsConfigurationSource = corsConfigurationSource;
+    }
 
     @Bean //manage the lifecycle of the bean.
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -42,6 +47,9 @@ public class SecurityConfig {
 //                //protect against cross site forgery using both sync token pattern or same site attribute.
 //                //during dev, disabling helps
                 .csrf(csrf->csrf.disable())
+
+                .cors((cors) -> cors
+                        .configurationSource(corsConfigurationSource))
 //
 //                //ability to have exception handling
 //                .exceptionHandling(exceptionHandling->
@@ -63,6 +71,7 @@ public class SecurityConfig {
                 );
         return http.build();
     }
+
 
     @Bean
     public AuthenticationManager authenticationManager(
