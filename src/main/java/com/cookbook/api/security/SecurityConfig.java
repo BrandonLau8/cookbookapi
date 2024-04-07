@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -16,6 +18,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.jdbc.JdbcDaoImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,6 +31,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import javax.sql.DataSource;
 import java.util.Arrays;
 
 @Configuration
@@ -85,14 +89,29 @@ public class SecurityConfig {
     }
 
     @Bean
+    public DataSource dataSource() {
+        DriverManagerDataSource dataSource = new DriverManagerDataSource();
+        dataSource.setDriverClassName("org.postgresql.Driver");
+        dataSource.setUrl("jdbc:postgresql://localhost:5432/cookbookapi"); // Update with your PostgreSQL URL
+        dataSource.setUsername("postgres"); // Update with your PostgreSQL username
+        dataSource.setPassword("password"); // Update with your PostgreSQL password
+        return dataSource;
+    }
+
+    @Bean
     public UserDetailsService userDetailsService() {
         UserDetails userDetails = User.withDefaultPasswordEncoder()
                 .username("user")
-                .password("password")
+                   .password("password")
                 .roles("USER")
                 .build();
+        UserDetails adminDetails = User.withDefaultPasswordEncoder()
+                .username("admin")
+                .password("password")
+                .roles("ADMIN")
+                .build();
 
-        return new InMemoryUserDetailsManager(userDetails);
+        return new InMemoryUserDetailsManager(userDetails, adminDetails);
     }
 
     @Bean

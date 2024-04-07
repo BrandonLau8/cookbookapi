@@ -23,7 +23,7 @@ public class TestController {
         Authentication authenticationResponse =
                 this.authenticationManager.authenticate(authenticationRequest);
         // ...
-        return new ResponseEntity<>(authenticationRequest, HttpStatus.OK);
+        return new ResponseEntity<>(authenticationResponse, HttpStatus.OK);
     }
 
     public record LoginRequest(String username, String password) {
