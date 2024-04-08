@@ -48,14 +48,15 @@ public class AuthController {
         this.userService = userService;
     }
 
+    //For In-Memory User Details
     @PostMapping("/login")
     public ResponseEntity<Authentication> login(@RequestBody LoginRequest loginRequest) {
         Authentication authenticationRequest =
                 UsernamePasswordAuthenticationToken.unauthenticated(loginRequest.username(), loginRequest.password());
         Authentication authenticationResponse =
-                authenticationManager.authenticate(authenticationRequest);
+                this.authenticationManager.authenticate(authenticationRequest);
         // ...
-        return new ResponseEntity<>(authenticationResponse, HttpStatus.OK);
+        return new ResponseEntity<>(authenticationRequest, HttpStatus.OK);
     }
 
     public record LoginRequest(String username, String password) {

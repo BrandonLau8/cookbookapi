@@ -21,6 +21,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.jdbc.JdbcDaoImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
@@ -72,7 +73,8 @@ public class SecurityConfig {
 
                                 //any endpoint in your app requires that the security context at minimum be authen in order to allow it
                                 .anyRequest().authenticated()
-                );
+                )
+                .addFilterBefore()
         return http.build();
     }
 
@@ -100,14 +102,14 @@ public class SecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        UserDetails userDetails = User.withDefaultPasswordEncoder()
+        UserDetails userDetails = User.builder()
                 .username("user")
-                   .password("password")
+                   .password(passwordEncoder().encode("password"))
                 .roles("USER")
                 .build();
-        UserDetails adminDetails = User.withDefaultPasswordEncoder()
+        UserDetails adminDetails = User.builder()
                 .username("admin")
-                .password("password")
+                .password(passwordEncoder().encode("password"))
                 .roles("ADMIN")
                 .build();
 
@@ -118,7 +120,9 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
+
 }
+
 
 
 
