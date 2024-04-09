@@ -9,10 +9,12 @@ import com.cookbook.api.services.UserService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
 import java.util.Base64;
+import java.util.Collections;
 import java.util.Date;
 
 @Component
@@ -45,6 +47,7 @@ public class UserAuthProvider {
         Algorithm algorithm = Algorithm.HMAC256(secretKey);
         JWTVerifier verifier = JWT.require(algorithm).build();
         DecodedJWT decodedJWT = verifier.verify(token);
-        UserDto user = userService.
+        UserDto user = userService.findByLogin(decodedJWT.getSubject());
+        return new UsernamePasswordAuthenticationToken(user, null, Collections.emptyList());
     }
 }

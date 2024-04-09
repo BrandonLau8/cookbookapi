@@ -1,75 +1,59 @@
 package com.cookbook.api.controllers;
 
-import com.cookbook.api.dto.AuthResponseDto;
 import com.cookbook.api.dto.LoginDto;
 import com.cookbook.api.dto.RegisterDto;
 import com.cookbook.api.dto.UserDto;
-import com.cookbook.api.models.Role;
-import com.cookbook.api.models.UserEntity;
-import com.cookbook.api.repository.RoleRepository;
-import com.cookbook.api.repository.UserRepository;
+import com.cookbook.api.security.UserAuthProvider;
 import com.cookbook.api.services.UserService;
-import org.apache.catalina.User;
+import lombok.RequiredArgsConstructor;
+import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collection;
-import java.util.Collections;
+import java.net.URI;
+
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/auth/")
 public class AuthController {
-    private AuthenticationManager authenticationManager;
-    private UserRepository userRepository;
-    private RoleRepository roleRepository;
-    private PasswordEncoder passwordEncoder;
-
-    private UserService userService;
-//    private JWTGenerator jwtGenerator;
 
     @Autowired
-    public AuthController(
-            AuthenticationManager authenticationManager,
-            UserRepository userRepository,
-            RoleRepository roleRepository,
-            PasswordEncoder passwordEncoder,
-            UserService userService) {
-        this.authenticationManager = authenticationManager;
-        this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.userService = userService;
-    }
+    private UserAuthProvider userAuthProvider;
+
+    @Autowired
+    private UserService userService;
+
 
     //For In-Memory User Details
+//    @PostMapping("/login")
+//    public ResponseEntity<Authentication> login(@RequestBody LoginRequest loginRequest) {
+//        Authentication authenticationRequest =
+//                UsernamePasswordAuthenticationToken.unauthenticated(loginRequest.username(), loginRequest.password());
+//        Authentication authenticationResponse =
+//                this.authenticationManager.authenticate(authenticationRequest);
+//        // ...
+//        return new ResponseEntity<>(authenticationRequest, HttpStatus.OK);
+//    }
+
+//    public record LoginRequest(String username, String password) {
+//    }
+
     @PostMapping("/login")
-    public ResponseEntity<Authentication> login(@RequestBody LoginRequest loginRequest) {
-        Authentication authenticationRequest =
-                UsernamePasswordAuthenticationToken.unauthenticated(loginRequest.username(), loginRequest.password());
-        Authentication authenticationResponse =
-                this.authenticationManager.authenticate(authenticationRequest);
-        // ...
-        return new ResponseEntity<>(authenticationRequest, HttpStatus.OK);
+    public ResponseEntity<UserDto> login(@RequestBody LoginDto loginDto) {
+        UserDto userDto = userService.login(loginDto);
+        userDto.setToken(userAuthProvider.createToken(userDto.getUsername()));
+        return ResponseEntity.ok(userDto);
     }
 
-    public record LoginRequest(String username, String password) {
+    @PostMapping("/register")
+    public ResponseEntity<UserDto> register(@RequestBody RegisterDto registerDto) {
+        UserDto createdUser = userService.register(registerDto);
+        createdUser.setToken(userAuthProvider.createToken(registerDto.getUsername()));
+        return ResponseEntity.created(URI.create("/users/" + createdUser.getId())).body(createdUser);
     }
 }
-
-//    @PostMapping("/login")
-//    public ResponseEntity<UserDto> login(@RequestBody LoginDto loginDto) {
-//        UserDto userDto = userService.login(loginDto);
-//        userDto.setToken(userAuthenticationProvider.createToken(userDto.getLogin()));
-//        return ResponseEntity.ok(userDto);
-//    }
-//}
 
 
 
