@@ -5,13 +5,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.server.authentication.logout.DelegatingServerLogoutHandler;
+import org.springframework.security.web.server.authentication.logout.SecurityContextServerLogoutHandler;
+import org.springframework.security.web.server.authentication.logout.WebSessionServerLogoutHandler;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
@@ -26,6 +31,11 @@ public class SecurityConfig {
 
     @Bean //manage the lifecycle of the bean.
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
+        DelegatingServerLogoutHandler logoutHandler = new DelegatingServerLogoutHandler(
+                new SecurityContextServerLogoutHandler(), new WebSessionServerLogoutHandler()
+        );
+
         http
                 .addFilterBefore(new JWTAuthFilter(userAuthProvider), BasicAuthenticationFilter.class)
 //                //protect against cross site forgery using both sync token pattern or same site attribute.
@@ -53,6 +63,7 @@ public class SecurityConfig {
                                 //any endpoint in your app requires that the security context at minimum be authen in order to allow it
                                 .anyRequest().authenticated()
                 );
+
 
         return http.build();
     }
