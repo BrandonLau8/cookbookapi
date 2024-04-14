@@ -1,11 +1,14 @@
 package com.cookbook.api.security;
 
+import com.cookbook.api.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -27,6 +30,10 @@ public class SecurityConfig {
     private final CorsConfigurationSource corsConfigurationSource;
 
     private final UserAuthProvider userAuthProvider;
+
+    private final UserService userService;
+
+    private final PasswordConfig passwordConfig;
 
 
     @Bean //manage the lifecycle of the bean.
@@ -69,16 +76,16 @@ public class SecurityConfig {
     }
 
 
-//    @Bean
-//    public AuthenticationManager authenticationManager(
-//            UserDetailsService userDetailsService,
-//            PasswordEncoder passwordEncoder) {
-//        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-//        authenticationProvider.setUserDetailsService(userDetailsService);
-//        authenticationProvider.setPasswordEncoder(passwordEncoder);
-//
-//        return new ProviderManager(authenticationProvider);
-//    }
+    @Bean
+    public AuthenticationManager authenticationManager(
+            UserService userService,
+            PasswordConfig passwordConfig) {
+        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+        authenticationProvider.setUserDetailsService(userService);
+        authenticationProvider.setPasswordEncoder(passwordConfig.passwordEncoder());
+
+        return new ProviderManager(authenticationProvider);
+    }
 
 //    @Bean
 //    public DataSource dataSource() {

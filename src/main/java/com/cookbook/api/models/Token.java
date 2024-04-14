@@ -1,7 +1,9 @@
 package com.cookbook.api.models;
 
 import jakarta.persistence.*;
+import lombok.Data;
 
+@Data
 @Entity
 @Table(name = "tokens")
 public class Token {

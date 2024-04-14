@@ -3,11 +3,12 @@ package com.cookbook.api.services;
 import com.cookbook.api.dto.LoginDto;
 import com.cookbook.api.dto.RegisterDto;
 import com.cookbook.api.dto.UserDto;
+import com.cookbook.api.models.UserEntity;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-public interface UserService {
-    public UserDto login(LoginDto loginDto);
+public interface UserService extends UserDetailsService {
 
-    UserDto register(RegisterDto registerDto);
-
-    UserDto findByLogin(String username);
+    UserEntity loadUserByUsername(LoginDto loginDto) throws UsernameNotFoundException;
 }
