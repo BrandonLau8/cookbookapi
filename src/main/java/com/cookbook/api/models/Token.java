@@ -17,11 +17,11 @@ public class Token {
 
     private boolean isLoggedOut;
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(
-            name = "user_token",
+            name = "user_tokens",
             joinColumns= @JoinColumn(name="token_id", referencedColumnName="id"),
             inverseJoinColumns= @JoinColumn(name="user_id", referencedColumnName="id")
     )
-    private String username;
+    private UserEntity username;
 }

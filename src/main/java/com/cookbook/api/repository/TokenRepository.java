@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface TokenRepository extends JpaRepository<Token, Integer> {
-    List<Token> findAllTokensByUser(Integer userId);
+//    List<Token> findAllTokensByUser(Integer userId);
 
-    Optional<Token> findByToken(String token);
+//    Optional<Token> findByRegToken(String token);
 }

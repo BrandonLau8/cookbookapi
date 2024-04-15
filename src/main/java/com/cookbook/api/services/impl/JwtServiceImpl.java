@@ -1,8 +1,8 @@
 package com.cookbook.api.services.impl;
 
-import com.cookbook.api.models.Token;
+
 import com.cookbook.api.models.UserEntity;
-import com.cookbook.api.repository.TokenRepository;
+
 import com.cookbook.api.services.JwtService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+import java.security.Key;
 import java.util.Date;
 import java.util.function.Function;
 
@@ -19,8 +20,8 @@ import java.util.function.Function;
 @Service
 public class JwtServiceImpl implements JwtService {
 
-    private final String SECRET_KEY = "secret";
-    private final TokenRepository tokenRepository;
+    private final Key SECRET_KEY = Keys.secretKeyFor(io.jsonwebtoken.SignatureAlgorithm.HS256);
+
 
     @Override
     public String extractUsername(String token) {
@@ -45,23 +46,25 @@ public class JwtServiceImpl implements JwtService {
                 .setSubject(userEntity.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 24*60*60*1000))
-                .signWith(getSignInKey())
+                .signWith(SECRET_KEY)
                 .compact();
+
+        System.out.println(SECRET_KEY);
 
         return token;
     }
 
     private Claims extractAllClaims(String token) {
-        SecretKey signingKey = getSignInKey();
+//        SecretKey signingKey = getSignInKey();
         return (Claims) Jwts
                 .parserBuilder()
-                .setSigningKey(signingKey)
-                .requireIssuer("https://issuer.example.com")
+                .setSigningKey(SECRET_KEY)
+                .requireIssuer("http://localhost:5173")
                 .build().parse(token);
     }
 
-    private SecretKey getSignInKey() {
-        byte[] keyBytes = Decoders.BASE64URL.decode(SECRET_KEY);
-        return Keys.hmacShaKeyFor(keyBytes);
-    }
+//    private SecretKey getSignInKey() {
+//        byte[] keyBytes = Decoders.BASE64URL.decode(SECRET_KEY);
+//        return Keys.hmacShaKeyFor(keyBytes);
+//    }
 }

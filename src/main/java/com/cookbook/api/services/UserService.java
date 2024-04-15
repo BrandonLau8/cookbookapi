@@ -10,5 +10,5 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 public interface UserService extends UserDetailsService {
 
-    UserEntity loadUserByUsername(LoginDto loginDto) throws UsernameNotFoundException;
+    public UserEntity loadUserByUsername(String username) throws UsernameNotFoundException;
 }

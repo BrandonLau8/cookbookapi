@@ -1,6 +1,5 @@
 package com.cookbook.api.services.impl;
 
-import com.cookbook.api.dto.AuthResponseDto;
 import com.cookbook.api.dto.LoginDto;
 import com.cookbook.api.dto.RegisterDto;
 import com.cookbook.api.dto.UserDto;
@@ -16,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -24,16 +24,14 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
-public abstract class UserServiceImpl implements UserService {
+public class UserServiceImpl implements UserService {
 
-    private UserRepository userRepository;
-
+    private final UserRepository userRepository;
     @Override
-    public UserEntity loadUserByUsername(LoginDto loginDto) throws UsernameNotFoundException {
-        UserEntity userEntity = userRepository.findByUsername(loginDto.getUsername())
-                .orElseThrow(()-> new LoginException("Username not found", HttpStatus.NOT_FOUND));
+    public UserEntity loadUserByUsername(String username) throws UsernameNotFoundException {
+        UserEntity userEntity = userRepository.findByUsername(username)
+                .orElseThrow(() -> new LoginException("Username not found", HttpStatus.NOT_FOUND));
 
         return userEntity;
     }
-
 }
