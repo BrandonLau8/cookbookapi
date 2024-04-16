@@ -1,5 +1,6 @@
 package com.cookbook.api.models;
 
+import com.auth0.jwt.algorithms.Algorithm;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -11,9 +12,7 @@ public class Token {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private String regToken;
-
-    private String loginToken;
+    private String token;
 
     private boolean isLoggedOut;
 

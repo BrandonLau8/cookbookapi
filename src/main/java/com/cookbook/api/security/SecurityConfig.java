@@ -74,16 +74,16 @@ public class SecurityConfig {
     }
 
 
-    @Bean
-    public AuthenticationManager authenticationManager(
-            UserService userService,
-            PasswordConfig passwordConfig) {
-        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-        authenticationProvider.setUserDetailsService(userService);
-        authenticationProvider.setPasswordEncoder(passwordConfig.passwordEncoder());
-
-        return new ProviderManager(authenticationProvider);
-    }
+//    @Bean
+//    public AuthenticationManager authenticationManager(
+//            UserService userService,
+//            PasswordConfig passwordConfig) {
+//        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+//        authenticationProvider.setUserDetailsService(userService);
+//        authenticationProvider.setPasswordEncoder(passwordConfig.passwordEncoder());
+//
+//        return new ProviderManager(authenticationProvider);
+//    }
 
 //    @Bean
 //    public DataSource dataSource() {
