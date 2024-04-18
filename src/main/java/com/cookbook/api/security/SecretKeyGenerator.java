@@ -1,8 +1,11 @@
 package com.cookbook.api.security;
 
+import org.springframework.stereotype.Component;
+
 import java.security.SecureRandom;
 import java.util.Base64;
 
+@Component
 public class SecretKeyGenerator {
 
     public byte[] keyBytes = generateRandomBytes(32);

@@ -5,7 +5,8 @@ import com.cookbook.api.dto.RegisterDto;
 import com.cookbook.api.dto.UserDto;
 
 public interface AuthService {
-//    public UserDto login(LoginDto loginDto);
+    public UserDto login(LoginDto loginDto);
 
     public UserDto register(RegisterDto registerDto);
+
 }

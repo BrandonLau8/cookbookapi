@@ -1,5 +1,6 @@
 package com.cookbook.api.security;
 
+import com.cookbook.api.services.JwtService;
 import com.cookbook.api.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,13 +37,15 @@ public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
 
+    private final JwtService jwtService;
+
 
 
     @Bean //manage the lifecycle of the bean.
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthFilter(jwtService), BasicAuthenticationFilter.class)
 //                //protect against cross site forgery using both sync token pattern or same site attribute.
 //                //during dev, disabling helps
                 .csrf(csrf->csrf.disable())

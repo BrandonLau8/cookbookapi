@@ -1,10 +1,10 @@
 package com.cookbook.api.services.impl;
 
-import com.auth0.jwt.algorithms.Algorithm;
 import com.cookbook.api.dto.LoginDto;
 import com.cookbook.api.dto.RegisterDto;
 import com.cookbook.api.dto.UserDto;
 import com.cookbook.api.exceptions.LoginException;
+import com.cookbook.api.mappers.UserMappers;
 import com.cookbook.api.models.RoleEntity;
 import com.cookbook.api.models.RoleType;
 import com.cookbook.api.models.Token;
@@ -16,11 +16,10 @@ import com.cookbook.api.security.PasswordConfig;
 import com.cookbook.api.services.AuthService;
 import com.cookbook.api.services.JwtService;
 import com.cookbook.api.services.UserService;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -29,6 +28,7 @@ import java.util.Optional;
 
 
 @RequiredArgsConstructor
+@Data
 @Service
 public class AuthServiceImpl implements AuthService {
 
@@ -44,7 +44,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final JwtService jwtService;
 
-    private final AuthenticationManager authenticationManager;
+    private final UserMappers userMappers;
 
 
 //    @Override
@@ -58,6 +58,7 @@ public class AuthServiceImpl implements AuthService {
 //        throw new LoginException("Invalid Password", HttpStatus.BAD_REQUEST);
 //    }
 
+    @Override
     public UserDto login(LoginDto loginDto) {
 
         UserEntity userEntity = userRepository.findByUsername(loginDto.getUsername()).orElseThrow();
@@ -74,11 +75,12 @@ public class AuthServiceImpl implements AuthService {
 //                )
 //        );
 
-        String jwt = jwtService.generateToken(userEntity);
+        String jwt = jwtService.generateToken(userEntity.getUsername());
         revokeAllTokensByUser(userEntity);
         saveToken(jwt, userEntity);
+        System.out.println();
 
-        return maptoDto(userEntity, jwt);
+        return userMappers.maptoDto(userEntity);
     }
 
     @Override
@@ -89,61 +91,42 @@ public class AuthServiceImpl implements AuthService {
             throw new LoginException("User already exists", HttpStatus.BAD_REQUEST);
         }
 
-        UserEntity userEntity = maptoEntity(registerDto);
+        UserEntity userEntity = userMappers.maptoEntity(registerDto);
 
         UserEntity savedEntity = userRepository.save(userEntity);
 
         //Needs to be same as login
-        String jwt = jwtService.generateToken(savedEntity);
+        String jwt = jwtService.generateToken(savedEntity.getUsername());
 
         List<Token> savedTokens = saveToken(jwt, savedEntity);
         savedEntity.setTokens(savedTokens);
-        System.out.println(savedEntity);
+        System.out.println(savedEntity.getTokens());
 
-        return maptoDto(savedEntity, jwt);
+        return userMappers.maptoDto(savedEntity);
     }
 
-    private UserDto maptoDto(UserEntity userEntity, String jwt) {
-        UserDto userDto = new UserDto();
-        userDto.setId(userEntity.getId());
-        userDto.setFirstname(userEntity.getFirstname());
-        userDto.setLastname(userEntity.getLastname());
-        userDto.setUsername(userEntity.getUsername());
-        userDto.setToken(jwt);
 
-        return userDto;
-    }
 
-    private UserEntity maptoEntity(RegisterDto registerDto) {
-        UserEntity userEntity = new UserEntity();
-        userEntity.setFirstname(registerDto.getFirstname());
-        userEntity.setLastname(registerDto.getLastname());
-        userEntity.setUsername(registerDto.getUsername());
-        userEntity.setPassword(passwordConfig.passwordEncoder().encode(registerDto.getPassword()));
 
-        RoleEntity assignUserRole = new RoleEntity();
-        assignUserRole.setName(RoleType.USER);
-        roleRepository.save(assignUserRole);
-
-        return userEntity;
-    }
 
     private List<Token> saveToken(String jwt, UserEntity userEntity) {
         Token token = new Token();
         token.setToken(jwt);
         token.setLoggedOut(false);
-        token.setUsername(userEntity);
+
 
         tokenRepository.save(token);
 
         List<Token> savedTokens = new ArrayList<>();
         savedTokens.add(token);
 
+        userEntity.setTokens(savedTokens);
+
         return savedTokens;
     }
 
     private void revokeAllTokensByUser(UserEntity userEntity) {
-        List<Token> validTokens = tokenRepository.findAllTokensByUser(userEntity.getId());
+        List<Token> validTokens = tokenRepository.findAllTokensByPersonId(userEntity.getId());
         if(validTokens.isEmpty()) {
             return;
         }
@@ -151,4 +134,5 @@ public class AuthServiceImpl implements AuthService {
             t.setLoggedOut(true);
         });
     }
+
 }

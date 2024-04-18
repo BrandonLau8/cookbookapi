@@ -6,6 +6,7 @@ import com.cookbook.api.dto.RegisterDto;
 import com.cookbook.api.dto.UserDto;
 
 import com.cookbook.api.services.AuthService;
+import com.cookbook.api.services.JwtService;
 import com.cookbook.api.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
@@ -24,16 +25,26 @@ public class AuthController {
 
 
     @Autowired
-    private UserService userService;
+    private final UserService userService;
 
     @Autowired
-    private AuthService authService;
+    private final AuthService authService;
+
+    @Autowired
+    private final JwtService jwtService;
 
 
     @PostMapping("/register")
     public ResponseEntity<UserDto> register(@RequestBody RegisterDto registerDto) {
         UserDto createdUser = authService.register(registerDto);
         return ResponseEntity.created(URI.create("/users/" + createdUser.getId())).body(createdUser);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<UserDto> login(@RequestBody LoginDto loginDto) {
+        UserDto userDto = authService.login(loginDto);
+        userDto.setToken(jwtService.generateToken(userDto.getUsername()));
+        return new ResponseEntity<>(userDto, HttpStatus.OK);
     }
 }
 

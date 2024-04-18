@@ -29,11 +29,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
 
-    private final AuthService authService;
-
-    private final UserService userService;
-
-
     @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
@@ -47,11 +42,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             if(authElements.length == 2 && "Bearer".equals(authElements[0])) {
                 try {
                     SecurityContextHolder.getContext().setAuthentication(
-
+                            jwtService.validateToken(authElements[1])
                     );
+                } catch(RuntimeException e) {
+                    SecurityContextHolder.clearContext();
+                    throw e;
                 }
             }
         }
+
+        filterChain.doFilter(request, response);
     }
 
 }
