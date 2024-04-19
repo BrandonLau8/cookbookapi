@@ -39,12 +39,18 @@ public class SecurityConfig {
 
     private final JwtService jwtService;
 
+//    private final AuthEntryPoint authEntryPoint;
+
 
 
     @Bean //manage the lifecycle of the bean.
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
+                //ability to have exception handling
+//                .exceptionHandling(exceptionHandling->
+//                        exceptionHandling.authenticationEntryPoint(authEntryPoint))
+
                 .addFilterBefore(new JwtAuthFilter(jwtService), BasicAuthenticationFilter.class)
 //                //protect against cross site forgery using both sync token pattern or same site attribute.
 //                //during dev, disabling helps
@@ -53,9 +59,7 @@ public class SecurityConfig {
                 .cors((cors) -> cors
                         .configurationSource(corsConfigurationSource))
 //
-//                //ability to have exception handling
-//                .exceptionHandling(exceptionHandling->
-//                        exceptionHandling.authenticationEntryPoint(jwtAuthEntryPoint))
+//
 //
 //                //stateless means you do not wish to create sessions which is related to logging users out.
 //                .sessionManagement(sessionManagement ->

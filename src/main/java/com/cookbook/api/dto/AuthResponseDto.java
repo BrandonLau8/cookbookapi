@@ -9,6 +9,5 @@
 //@NoArgsConstructor
 //public class AuthResponseDto {
 //
-//    private String regToken;
-//    private String loginToken;
+//    private String token;
 //}
