@@ -12,6 +12,7 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -38,6 +39,8 @@ public class SecurityConfig {
     private final JwtAuthFilter jwtAuthFilter;
 
     private final JwtService jwtService;
+
+    private final CustomLogoutHandler logoutHandler;
 
 //    private final AuthEntryPoint authEntryPoint;
 
@@ -71,9 +74,15 @@ public class SecurityConfig {
 //                        .requestMatchers("/api/**").hasAuthority("USER")
 //                        .requestMatchers("/api/food/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register").permitAll()
+                                .requestMatchers("/api/foods").permitAll()
 
                                 //any endpoint in your app requires that the security context at minimum be authen in order to allow it
                                 .anyRequest().authenticated()
+                )
+                .logout(l->l
+                        .logoutUrl("/api/logout")
+                        .addLogoutHandler(logoutHandler)
+                        .logoutSuccessHandler(((request, response, authentication) -> SecurityContextHolder.clearContext()))
                 );
 
 

@@ -8,6 +8,9 @@ import com.cookbook.api.dto.UserDto;
 import com.cookbook.api.services.AuthService;
 import com.cookbook.api.services.JwtService;
 import com.cookbook.api.services.UserService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,9 +44,23 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserDto> login(@RequestBody LoginDto loginDto) {
+    public ResponseEntity<UserDto> login(@RequestBody LoginDto loginDto, HttpServletResponse response, HttpServletRequest request) {
         UserDto userDto = authService.login(loginDto);
-        userDto.setToken(jwtService.generateToken(userDto.getUsername()));
+        String token = jwtService.generateToken(userDto.getUsername());
+
+        // Add the token to an HTTP-only cookie
+        Cookie tokenCookie = new Cookie("token", token);
+        tokenCookie.setHttpOnly(true);
+        tokenCookie.setPath("/");
+
+        // Add more cookie attributes as needed (secure, SameSite, etc.)
+         tokenCookie.setSecure(true); // Uncomment if using HTTPS
+        // tokenCookie.setSameSite(SameSite.NONE.toString()); // Adjust as needed
+
+        response.addCookie(tokenCookie);
+
+        userDto.setToken(token);
+
         return new ResponseEntity<>(userDto, HttpStatus.OK);
     }
 }

@@ -133,6 +133,8 @@ public class AuthServiceImpl implements AuthService {
         validTokens.forEach(t-> {
             t.setLoggedOut(true);
         });
+
+        tokenRepository.saveAll(validTokens);
     }
 
 }
