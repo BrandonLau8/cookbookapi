@@ -5,6 +5,8 @@ import com.cookbook.api.dto.LoginDto;
 import com.cookbook.api.dto.RegisterDto;
 import com.cookbook.api.dto.UserDto;
 
+import com.cookbook.api.models.UserEntity;
+import com.cookbook.api.repository.UserRepository;
 import com.cookbook.api.services.AuthService;
 import com.cookbook.api.services.JwtService;
 import com.cookbook.api.services.UserService;
@@ -36,6 +38,9 @@ public class AuthController {
     @Autowired
     private final JwtService jwtService;
 
+    @Autowired
+    private final UserRepository userRepository;
+
 
     @PostMapping("/register")
     public ResponseEntity<UserDto> register(@RequestBody RegisterDto registerDto) {
@@ -63,7 +68,19 @@ public class AuthController {
 
         return new ResponseEntity<>(userDto, HttpStatus.OK);
     }
+
+    @GetMapping("/isLoggedOut")
+    public ResponseEntity<Boolean> getTokenStatus(@RequestBody LoginDto loginDto) {
+        UserEntity userEntity = userRepository.findByUsername(loginDto.getUsername()).orElse(null);
+        if (userEntity == null) {
+            return ResponseEntity.notFound().build();
+        }
+        // Check if any of the user's tokens are marked as logged out
+        boolean isUserLoggedOut = userEntity.isLoggedOut();
+        return ResponseEntity.ok(isUserLoggedOut);
+    }
 }
+
 
 
 

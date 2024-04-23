@@ -78,7 +78,8 @@ public class AuthServiceImpl implements AuthService {
         String jwt = jwtService.generateToken(userEntity.getUsername());
         revokeAllTokensByUser(userEntity);
         saveToken(jwt, userEntity);
-        System.out.println();
+        userEntity.setLoggedOut(false);
+
 
         return userMappers.maptoDto(userEntity);
     }
@@ -100,6 +101,7 @@ public class AuthServiceImpl implements AuthService {
 
         List<Token> savedTokens = saveToken(jwt, savedEntity);
         savedEntity.setTokens(savedTokens);
+        savedEntity.setLoggedOut(true);
         System.out.println(savedEntity.getTokens());
 
         return userMappers.maptoDto(savedEntity);

@@ -27,6 +27,8 @@ public class UserMappers {
         userDto.setFirstname(userEntity.getFirstname());
         userDto.setLastname(userEntity.getLastname());
         userDto.setUsername(userEntity.getUsername());
+        userDto.setLoggedOut(userEntity.isLoggedOut());
+
 
         Optional<Token> firstToken = userEntity.getTokens().stream().findFirst();
         firstToken.ifPresent(token -> userDto.setToken(token.getToken()));
@@ -41,6 +43,7 @@ public class UserMappers {
         userEntity.setLastname(registerDto.getLastname());
         userEntity.setUsername(registerDto.getUsername());
         userEntity.setPassword(passwordConfig.passwordEncoder().encode(registerDto.getPassword()));
+
 
         RoleEntity assignUserRole = new RoleEntity();
         assignUserRole.setName(RoleType.USER);

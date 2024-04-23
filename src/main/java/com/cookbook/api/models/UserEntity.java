@@ -32,6 +32,8 @@ public class UserEntity {
     @NotEmpty
     private String password;
 
+    private boolean isLoggedOut;
+
     //fetchtype eager because you always want roles to be shown
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(
