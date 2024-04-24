@@ -36,7 +36,7 @@ public class CustomLogoutHandler implements LogoutHandler {
 
 
         if(storedToken != null) {
-            storedToken.setLoggedOut(true);
+            storedToken.setStatus(false);
             tokenRepository.save(storedToken);
 
             if(authentication != null && authentication.getPrincipal() instanceof UserDto) {
@@ -44,7 +44,7 @@ public class CustomLogoutHandler implements LogoutHandler {
                 UserEntity userEntity = userRepository.findByUsername(userDto.getUsername()).orElseThrow();
 
                 if(userEntity != null) {
-                    userEntity.setLoggedOut(true);
+                    userEntity.setStatus(false);
                     userRepository.save(userEntity);
                 }
             }

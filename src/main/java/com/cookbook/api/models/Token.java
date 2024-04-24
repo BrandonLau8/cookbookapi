@@ -20,7 +20,7 @@ public class Token {
 
     private String token;
 
-    private boolean isLoggedOut;
+    private boolean status;
 
     @ManyToOne
     @JoinColumn(name = "person_id")

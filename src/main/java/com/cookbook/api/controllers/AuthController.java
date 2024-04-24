@@ -69,16 +69,18 @@ public class AuthController {
         return new ResponseEntity<>(userDto, HttpStatus.OK);
     }
 
-    @GetMapping("/isLoggedOut")
-    public ResponseEntity<Boolean> getTokenStatus(@RequestBody LoginDto loginDto) {
-        UserEntity userEntity = userRepository.findByUsername(loginDto.getUsername()).orElse(null);
-        if (userEntity == null) {
-            return ResponseEntity.notFound().build();
-        }
-        // Check if any of the user's tokens are marked as logged out
-        boolean isUserLoggedOut = userEntity.isLoggedOut();
-        return ResponseEntity.ok(isUserLoggedOut);
-    }
+//    @GetMapping("/status")
+//    public ResponseEntity<Boolean> getTokenStatus(LoginDto loginDto) {
+//        UserEntity userEntity = userRepository.findByUsername(loginDto.getUsername()).orElse(null);
+//        if (userEntity == null) {
+//            return ResponseEntity.notFound().build();
+//        }
+//        // Check if any of the user's tokens are marked as logged out
+//        UserDto userDto = new UserDto();;
+//        userDto.setLoggedOut(userEntity.isLoggedOut());
+//        boolean isUserLoggedOut = userDto.isLoggedOut();
+//        return ResponseEntity.ok(isUserLoggedOut);
+//    }
 }
 
 

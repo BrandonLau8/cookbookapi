@@ -27,7 +27,7 @@ public class UserMappers {
         userDto.setFirstname(userEntity.getFirstname());
         userDto.setLastname(userEntity.getLastname());
         userDto.setUsername(userEntity.getUsername());
-        userDto.setLoggedOut(userEntity.isLoggedOut());
+        userDto.setStatus(userEntity.isStatus());
 
 
         Optional<Token> firstToken = userEntity.getTokens().stream().findFirst();

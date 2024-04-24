@@ -77,9 +77,21 @@ public class AuthServiceImpl implements AuthService {
 
         String jwt = jwtService.generateToken(userEntity.getUsername());
         revokeAllTokensByUser(userEntity);
-        saveToken(jwt, userEntity);
-        userEntity.setLoggedOut(false);
+        // Save the token
+        List<Token> savedTokens = saveToken(jwt, userEntity);
 
+        // Update user status to true after successful login
+        userEntity.setStatus(true);
+        userRepository.save(userEntity);
+
+        // Set the token status based on the user's status
+        for (Token token : savedTokens) {
+            token.setStatus(userEntity.isStatus());
+            System.out.println("Token ID: " + token.getId());
+            System.out.println("Token Status: " + token.isStatus());
+        }
+
+        tokenRepository.saveAll(savedTokens);
 
         return userMappers.maptoDto(userEntity);
     }
@@ -93,15 +105,21 @@ public class AuthServiceImpl implements AuthService {
         }
 
         UserEntity userEntity = userMappers.maptoEntity(registerDto);
+        userEntity.setStatus(false);
 
         UserEntity savedEntity = userRepository.save(userEntity);
 
         //Needs to be same as login
         String jwt = jwtService.generateToken(savedEntity.getUsername());
-
         List<Token> savedTokens = saveToken(jwt, savedEntity);
+
+        // Set the token status based on the user's status
+        for (Token token : savedTokens) {
+            token.setStatus(savedEntity.isStatus());
+        }
+        tokenRepository.saveAll(savedTokens);
         savedEntity.setTokens(savedTokens);
-        savedEntity.setLoggedOut(true);
+
         System.out.println(savedEntity.getTokens());
 
         return userMappers.maptoDto(savedEntity);
@@ -114,8 +132,7 @@ public class AuthServiceImpl implements AuthService {
     private List<Token> saveToken(String jwt, UserEntity userEntity) {
         Token token = new Token();
         token.setToken(jwt);
-        token.setLoggedOut(false);
-
+        token.setStatus(false);
 
         tokenRepository.save(token);
 
@@ -133,7 +150,7 @@ public class AuthServiceImpl implements AuthService {
             return;
         }
         validTokens.forEach(t-> {
-            t.setLoggedOut(true);
+            t.setStatus(false);
         });
 
         tokenRepository.saveAll(validTokens);
