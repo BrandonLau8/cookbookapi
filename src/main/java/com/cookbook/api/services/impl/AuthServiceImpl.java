@@ -61,8 +61,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public UserDto login(LoginDto loginDto) {
 
+        //Look for User
         UserEntity userEntity = userRepository.findByUsername(loginDto.getUsername()).orElseThrow();
 
+        //Look for Password
         if(!passwordConfig.passwordEncoder().matches(loginDto.getPassword(), userEntity.getPassword())) {
             throw new LoginException("Invalid Password", HttpStatus.BAD_REQUEST);
         }
@@ -75,52 +77,62 @@ public class AuthServiceImpl implements AuthService {
 //                )
 //        );
 
+        //Generate Token (currently the same as Register Token)
         String jwt = jwtService.generateToken(userEntity.getUsername());
+
+        //All Status of Tokens related to UserEntity set to false
         revokeAllTokensByUser(userEntity);
-        // Save the token
-        List<Token> savedTokens = saveToken(jwt, userEntity);
 
-        // Update user status to true after successful login
+        // Save new JWT to Token and UserEntity
+        List<Token> savedTokens = saveTokens(jwt, userEntity);
+
+        // Set Status of the new JWT at UserEntity to true
         userEntity.setStatus(true);
-        userRepository.save(userEntity);
+        UserEntity currentUser = userRepository.save(userEntity);
 
-        // Set the token status based on the user's status
+        // Set Status of new JWT at Token to true
         for (Token token : savedTokens) {
             token.setStatus(userEntity.isStatus());
             System.out.println("Token ID: " + token.getId());
             System.out.println("Token Status: " + token.isStatus());
         }
 
+        //Save Tokens to Token and User Entity
         tokenRepository.saveAll(savedTokens);
+        currentUser.setTokens(savedTokens);
 
         return userMappers.maptoDto(userEntity);
     }
 
     @Override
     public UserDto register(RegisterDto registerDto) {
-        Optional<UserEntity> checkUser = userRepository.findByUsername(registerDto.getUsername());
 
+        //Check if theres any Existing Users
+        Optional<UserEntity> checkUser = userRepository.findByUsername(registerDto.getUsername());
         if (checkUser.isPresent()) {
             throw new LoginException("User already exists", HttpStatus.BAD_REQUEST);
         }
 
+        //Map RegisterDTO to UserEntity
         UserEntity userEntity = userMappers.maptoEntity(registerDto);
         userEntity.setStatus(false);
-
         UserEntity savedEntity = userRepository.save(userEntity);
 
+        //Generate JWT using the UserEntity
         //Needs to be same as login
         String jwt = jwtService.generateToken(savedEntity.getUsername());
-        List<Token> savedTokens = saveToken(jwt, savedEntity);
 
-        // Set the token status based on the user's status
+        //Save JWT to Token and UserEntity
+        List<Token> savedTokens = saveTokens(jwt, savedEntity);
+
+        // Set the token status based on the UserEntity Status
         for (Token token : savedTokens) {
             token.setStatus(savedEntity.isStatus());
         }
+
+        //Save Tokens to Token and UserEntity
         tokenRepository.saveAll(savedTokens);
         savedEntity.setTokens(savedTokens);
-
-        System.out.println(savedEntity.getTokens());
 
         return userMappers.maptoDto(savedEntity);
     }
@@ -129,26 +141,28 @@ public class AuthServiceImpl implements AuthService {
 
 
 
-    private List<Token> saveToken(String jwt, UserEntity userEntity) {
+    private List<Token> saveTokens(String jwt, UserEntity userEntity) {
+        //Set new JWT to Token and Status to true
         Token token = new Token();
         token.setToken(jwt);
         token.setStatus(false);
-
         tokenRepository.save(token);
 
+        //Save Token to UserEntity
         List<Token> savedTokens = new ArrayList<>();
         savedTokens.add(token);
-
         userEntity.setTokens(savedTokens);
 
         return savedTokens;
     }
 
     private void revokeAllTokensByUser(UserEntity userEntity) {
+        //Find all Tokens related to UserEntity
         List<Token> validTokens = tokenRepository.findAllTokensByPersonId(userEntity.getId());
         if(validTokens.isEmpty()) {
             return;
         }
+        //Set Status of Tokens related to UserEntity to false
         validTokens.forEach(t-> {
             t.setStatus(false);
         });

@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -29,6 +30,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
 
+    //Filter intercepts incoming requests
     @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
@@ -36,15 +38,18 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain) throws ServletException, IOException {
         String header = request.getHeader(HttpHeaders.AUTHORIZATION);
 
-        if(header != null) {
+        if (header != null) {
             String[] authElements = header.split(" ");
 
-            if(authElements.length == 2 && "Bearer".equals(authElements[0])) {
+            if (authElements.length == 2 && "Bearer".equals(authElements[0])) {
                 try {
-                    SecurityContextHolder.getContext().setAuthentication(
-                            jwtService.validateToken(authElements[1])
-                    );
-                } catch(RuntimeException e) {
+                    //Validate and possibly refresh token
+                    Authentication authentication = jwtService.validateToken(authElements[1]);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                    //Optionally check if token is expired
+                    if(authentication != null && isTokenExpired(authentication))
+                } catch (RuntimeException e) {
                     SecurityContextHolder.clearContext();
                     throw e;
                 }
@@ -54,4 +59,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    private boolean isTokenExpired(Authentication authentication) {
+        // Extract expiration time from token and check if it's expired
+        authentication.getPrincipal().
+    };
 }
