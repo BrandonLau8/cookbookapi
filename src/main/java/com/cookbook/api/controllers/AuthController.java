@@ -63,7 +63,7 @@ public class AuthController {
         // tokenCookie.setSameSite(SameSite.NONE.toString()); // Adjust as needed
 
         response.addCookie(tokenCookie);
-        userDto.setToken(token);
+//        userDto.setToken();
 
         return new ResponseEntity<>(userDto, HttpStatus.OK);
     }

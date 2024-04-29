@@ -1,6 +1,7 @@
 package com.cookbook.api.dto;
 
 
+import com.cookbook.api.models.Token;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,7 +16,7 @@ public class UserDto {
     private String firstname;
     private String lastname;
     private String username;
-    private String token;
+    private Token token;
     private boolean status;
 
 }

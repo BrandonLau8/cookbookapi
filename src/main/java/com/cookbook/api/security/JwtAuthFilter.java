@@ -1,9 +1,16 @@
 package com.cookbook.api.security;
 
+import com.cookbook.api.dto.UserDto;
+import com.cookbook.api.models.Token;
 import com.cookbook.api.models.UserEntity;
+import com.cookbook.api.repository.TokenRepository;
 import com.cookbook.api.services.AuthService;
 import com.cookbook.api.services.JwtService;
 import com.cookbook.api.services.UserService;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.Jwt;
+import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,6 +29,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Date;
 
 @RequiredArgsConstructor
 @Data
@@ -29,6 +37,11 @@ import java.io.IOException;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+
+    private final SecretKeyGenerator secretKeyGenerator;
+
+    private final TokenRepository tokenRepository;
+
 
     //Filter intercepts incoming requests
     @Override
@@ -48,7 +61,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authentication);
 
                     //Optionally check if token is expired
-                    if(authentication != null && isTokenExpired(authentication))
+                    if(authentication != null && isTokenExpired(authElements[1], secretKeyGenerator.secretKey)) {
+                        handleTokenExpiration(authentication);
+                    }
                 } catch (RuntimeException e) {
                     SecurityContextHolder.clearContext();
                     throw e;
@@ -59,8 +74,32 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private boolean isTokenExpired(Authentication authentication) {
-        // Extract expiration time from token and check if it's expired
-        authentication.getPrincipal().
+    public static Date extractExpiration(String token, String secretKey) {
+        Jws<Claims> claimsJws = Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
+        return claimsJws.getBody().getExpiration();
+    }
+
+    private static boolean isTokenExpired(String token, String secretKey) {
+        Date expiration = extractExpiration(token, secretKey);
+        return expiration.before(new Date());
     };
+
+    public static Token extractTokenFromAuthentication(Authentication authentication) {
+        if(authentication instanceof UsernamePasswordAuthenticationToken) {
+            UsernamePasswordAuthenticationToken authenticationToken = (UsernamePasswordAuthenticationToken) authentication;
+            UserDto userDto = (UserDto) authenticationToken.getPrincipal();
+
+            return userDto.getToken();
+        }
+        return null;
+    }
+    private void handleTokenExpiration(Authentication authentication) {
+        //Update Token status
+        Token expiredToken = extractTokenFromAuthentication(authentication);
+        expiredToken.setStatus(false);
+        tokenRepository.save(expiredToken);
+
+        UserEntity userEntity = expiredToken.getPerson();
+        userEntity.setStatus(false);
+    }
 }

@@ -1,5 +1,6 @@
 package com.cookbook.api.security;
 
+import com.cookbook.api.repository.TokenRepository;
 import com.cookbook.api.services.JwtService;
 import com.cookbook.api.services.UserService;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +44,10 @@ public class SecurityConfig {
 
     private final CustomLogoutHandler logoutHandler;
 
+    private final SecretKeyGenerator secretKeyGenerator;
+
+    private final TokenRepository tokenRepository;
+
 //    private final AuthEntryPoint authEntryPoint;
 
 
@@ -55,7 +60,7 @@ public class SecurityConfig {
 //                .exceptionHandling(exceptionHandling->
 //                        exceptionHandling.authenticationEntryPoint(authEntryPoint))
 
-                .addFilterBefore(new JwtAuthFilter(jwtService), BasicAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthFilter(jwtService, secretKeyGenerator, tokenRepository), BasicAuthenticationFilter.class)
 //                //protect against cross site forgery using both sync token pattern or same site attribute.
 //                //during dev, disabling helps
                 .csrf(csrf->csrf.disable())
