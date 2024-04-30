@@ -4,6 +4,7 @@ package com.cookbook.api.services.impl;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.cookbook.api.dto.UserDto;
 
@@ -36,9 +37,10 @@ public class JwtServiceImpl implements JwtService {
         Date now = new Date();
         Date validTil = new Date(now.getTime() * 3600000); //1hr
 
-        Algorithm algorithm = Algorithm.HMAC256(secretKeyGenerator.secretKey);
+        Algorithm algorithm = Algorithm.HMAC256(secretKeyGenerator.getSecretKey());
 
         return JWT.create()
+
                 .withSubject(username)
                 .withIssuedAt(now)
                 .withExpiresAt(validTil)
@@ -47,14 +49,20 @@ public class JwtServiceImpl implements JwtService {
 
     @Override
     public Authentication validateToken(String token) {
-        Algorithm algorithm = Algorithm.HMAC256(secretKeyGenerator.secretKey);
-        JWTVerifier jwtVerifier = JWT.require(algorithm).build();
 
-        DecodedJWT decodedJWT = jwtVerifier.verify(token);
+        DecodedJWT decodedJWT = verifyToken(token);
 
-        UserDto userDto = userService.findByUsername(decodedJWT.getSubject());
+        String username = decodedJWT.getSubject();
+        UserDto userDto = userService.findByUsername(username);
 
         return new UsernamePasswordAuthenticationToken(userDto, null, Collections.emptyList());
+    }
+
+    DecodedJWT verifyToken(String token) {
+        Algorithm algorithm = Algorithm.HMAC256(secretKeyGenerator.getSecretKey());
+        JWTVerifier verifier = JWT.require(algorithm)
+                .build();
+        return verifier.verify(token);
     }
 
 

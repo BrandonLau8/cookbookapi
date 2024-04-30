@@ -61,7 +61,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authentication);
 
                     //Optionally check if token is expired
-                    if(authentication != null && isTokenExpired(authElements[1], secretKeyGenerator.secretKey)) {
+                    if (authentication != null && isTokenExpired(authElements[1], secretKeyGenerator.getSecretKey())) {
                         handleTokenExpiration(authentication);
                     }
                 } catch (RuntimeException e) {
@@ -75,17 +75,20 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     public static Date extractExpiration(String token, String secretKey) {
-        Jws<Claims> claimsJws = Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
+        Jws<Claims> claimsJws = Jwts.parserBuilder().setSigningKey(secretKey)
+                        .requireIssuer("http://localhost:8080/auth").build().parseClaimsJws(token);
         return claimsJws.getBody().getExpiration();
     }
 
     private static boolean isTokenExpired(String token, String secretKey) {
         Date expiration = extractExpiration(token, secretKey);
         return expiration.before(new Date());
-    };
+    }
+
+    ;
 
     public static Token extractTokenFromAuthentication(Authentication authentication) {
-        if(authentication instanceof UsernamePasswordAuthenticationToken) {
+        if (authentication instanceof UsernamePasswordAuthenticationToken) {
             UsernamePasswordAuthenticationToken authenticationToken = (UsernamePasswordAuthenticationToken) authentication;
             UserDto userDto = (UserDto) authenticationToken.getPrincipal();
 
@@ -93,6 +96,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
         return null;
     }
+
     private void handleTokenExpiration(Authentication authentication) {
         //Update Token status
         Token expiredToken = extractTokenFromAuthentication(authentication);
