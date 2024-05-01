@@ -48,6 +48,6 @@ public class UserEntity {
             joinColumns = @JoinColumn(name = "person_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "token_id", referencedColumnName = "id")
     )
-    private List<Token> tokens = new ArrayList<>();
+    private List<String> tokens = new ArrayList<>();
 
 }

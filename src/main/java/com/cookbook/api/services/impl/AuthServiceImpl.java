@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @RequiredArgsConstructor
@@ -99,7 +100,10 @@ public class AuthServiceImpl implements AuthService {
 
         //Save Tokens to Token and User Entity
         tokenRepository.saveAll(savedTokens);
-        currentUser.setTokens(savedTokens);
+        List<String> tokenStrings = savedTokens.stream()
+                .map(Token::getToken)
+                .collect(Collectors.toList());
+        currentUser.setTokens(tokenStrings);
 
         return userMappers.maptoDto(userEntity);
     }
@@ -132,7 +136,10 @@ public class AuthServiceImpl implements AuthService {
 
         //Save Tokens to Token and UserEntity
         tokenRepository.saveAll(savedTokens);
-        savedEntity.setTokens(savedTokens);
+        List<String> tokenStrings = savedTokens.stream()
+                .map(Token::getToken)
+                .collect(Collectors.toList());
+        savedEntity.setTokens(tokenStrings);
 
         return userMappers.maptoDto(savedEntity);
     }
@@ -151,7 +158,10 @@ public class AuthServiceImpl implements AuthService {
         //Save Token to UserEntity
         List<Token> savedTokens = new ArrayList<>();
         savedTokens.add(token);
-        userEntity.setTokens(savedTokens);
+        List<String> tokenStrings = savedTokens.stream()
+                .map(Token::getToken)
+                .collect(Collectors.toList());
+        userEntity.setTokens(tokenStrings);
 
         return savedTokens;
     }

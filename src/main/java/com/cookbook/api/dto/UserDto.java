@@ -16,7 +16,7 @@ public class UserDto {
     private String firstname;
     private String lastname;
     private String username;
-    private Token token;
+    private String token;
     private boolean status;
 
 }

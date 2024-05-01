@@ -40,7 +40,6 @@ public class JwtServiceImpl implements JwtService {
         Algorithm algorithm = Algorithm.HMAC256(secretKeyGenerator.getSecretKey());
 
         return JWT.create()
-
                 .withSubject(username)
                 .withIssuedAt(now)
                 .withExpiresAt(validTil)

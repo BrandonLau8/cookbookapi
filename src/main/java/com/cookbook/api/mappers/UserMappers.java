@@ -30,7 +30,7 @@ public class UserMappers {
         userDto.setStatus(userEntity.isStatus());
 
 
-        Optional<Token> firstToken = userEntity.getTokens().stream().findFirst();
+        Optional<String> firstToken = userEntity.getTokens().stream().findFirst();
         firstToken.ifPresent(token -> userDto.setToken(token));
 
 

@@ -92,7 +92,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             UsernamePasswordAuthenticationToken authenticationToken = (UsernamePasswordAuthenticationToken) authentication;
             UserDto userDto = (UserDto) authenticationToken.getPrincipal();
 
-            return userDto.getToken();
+            Token token = new Token();
+            token.setToken(userDto.getToken());
+
+            return token;
         }
         return null;
     }
