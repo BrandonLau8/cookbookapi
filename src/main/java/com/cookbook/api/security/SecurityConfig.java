@@ -11,6 +11,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -47,6 +48,8 @@ public class SecurityConfig {
     private final SecretKeyGenerator secretKeyGenerator;
 
     private final TokenRepository tokenRepository;
+
+    private final DaoAuthProvider daoAuthProvider;
 
 //    private final AuthEntryPoint authEntryPoint;
 
@@ -94,6 +97,12 @@ public class SecurityConfig {
 
         return http.build();
     }
+
+    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+        auth.authenticationProvider(daoAuthProvider);
+    }
+
+
 
 
 //    @Bean

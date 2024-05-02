@@ -40,7 +40,7 @@ public class UserEntity {
             name = "person_roles",
             joinColumns = @JoinColumn(name = "person_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "roles_id", referencedColumnName = "id"))
-    private List<RoleEntity> roles = new ArrayList<>();
+    private List<String> roles = new ArrayList<>();
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(
