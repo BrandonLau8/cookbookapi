@@ -8,5 +8,5 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<UserEntity, String> {
     //Optional returns either an object with existing username or empty object
     Optional<UserEntity> findByUsername(String username);
-    Boolean existsByUsername(String username);
+
 }

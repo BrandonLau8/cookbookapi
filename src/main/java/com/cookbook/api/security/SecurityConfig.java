@@ -49,6 +49,7 @@ public class SecurityConfig {
 
     private final TokenRepository tokenRepository;
 
+    @Autowired
     private final DaoAuthProvider daoAuthProvider;
 
 //    private final AuthEntryPoint authEntryPoint;
@@ -63,7 +64,7 @@ public class SecurityConfig {
 //                .exceptionHandling(exceptionHandling->
 //                        exceptionHandling.authenticationEntryPoint(authEntryPoint))
 
-                .addFilterBefore(new JwtAuthFilter(jwtService, secretKeyGenerator, tokenRepository), BasicAuthenticationFilter.class)
+//                .addFilterBefore(new JwtAuthFilter(jwtService, secretKeyGenerator, tokenRepository), BasicAuthenticationFilter.class)
 //                //protect against cross site forgery using both sync token pattern or same site attribute.
 //                //during dev, disabling helps
                 .csrf(csrf->csrf.disable())
@@ -98,8 +99,10 @@ public class SecurityConfig {
         return http.build();
     }
 
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth.authenticationProvider(daoAuthProvider);
+    protected void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+        auth
+                .authenticationProvider(daoAuthProvider);
+
     }
 
 
