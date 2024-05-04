@@ -24,26 +24,23 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DaoAuthProvider extends DaoAuthenticationProvider {
 
-    @Autowired
     private final UserDetailsService userDetailsService;
 
-    @Autowired
     private final PasswordEncoder passwordEncoder;
-
 
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         String username = authentication.getName();
-        String encodedPassword = authentication.getCredentials().toString();
-        Set<GrantedAuthority> roles = authentication.getAuthorities().stream()
-                .map(role -> new SimpleGrantedAuthority(role.getAuthority()))
-                .collect(Collectors.toSet());
-
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        String rawPassword = authentication.getCredentials().toString();
+        String encodedPassword = userDetails.getPassword();
+//        Set<GrantedAuthority> roles = authentication.getAuthorities().stream()
+//                .map(role -> new SimpleGrantedAuthority(role.getAuthority()))
+//                .collect(Collectors.toSet());
 
-        if (passwordEncoder.matches()) {
-            return new UsernamePasswordAuthenticationToken(userDetails, password, roles);
+        if (passwordEncoder.matches(rawPassword, encodedPassword)) {
+            return new UsernamePasswordAuthenticationToken(userDetails, rawPassword, null);
         } else {
             throw new AuthenticationException("Invalid credentials") {}; // You can customize the exception message here
         }
