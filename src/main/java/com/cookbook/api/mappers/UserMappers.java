@@ -4,14 +4,15 @@ import com.cookbook.api.dto.RegisterDto;
 import com.cookbook.api.dto.UserDto;
 import com.cookbook.api.models.RoleEntity;
 import com.cookbook.api.models.RoleType;
-import com.cookbook.api.models.Token;
 import com.cookbook.api.models.UserEntity;
 import com.cookbook.api.repository.RoleRepository;
 import com.cookbook.api.security.PasswordConfig;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
+import java.util.Set;
 
 @RequiredArgsConstructor
 @Component
@@ -24,26 +25,21 @@ public class UserMappers {
     public UserDto maptoDto(UserEntity userEntity) {
         UserDto userDto = new UserDto();
         userDto.setId(userEntity.getId());
-        userDto.setFirstname(userEntity.getFirstname());
-        userDto.setLastname(userEntity.getLastname());
         userDto.setUsername(userEntity.getUsername());
-        userDto.setStatus(userEntity.isStatus());
+        userDto.setRoles(userEntity.getRoles());
+        return userDto;
+    }
 
-
-        Optional<String> firstToken = userEntity.getTokens().stream().findFirst();
-        firstToken.ifPresent(token -> userDto.setToken(token));
-
-
+    public UserDto detailToDto(UserDetails userDetails) {
+        UserDto userDto = new UserDto();
+        userDto.setUsername(userDetails.getUsername());
         return userDto;
     }
 
     public UserEntity maptoEntity(RegisterDto registerDto) {
         UserEntity userEntity = new UserEntity();
-        userEntity.setFirstname(registerDto.getFirstname());
-        userEntity.setLastname(registerDto.getLastname());
         userEntity.setUsername(registerDto.getUsername());
         userEntity.setPassword(passwordConfig.passwordEncoder().encode(registerDto.getPassword()));
-
 
         RoleEntity assignUserRole = new RoleEntity();
         assignUserRole.setName(RoleType.USER);

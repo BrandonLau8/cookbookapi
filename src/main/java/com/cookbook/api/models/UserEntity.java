@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "person")
@@ -23,8 +24,6 @@ public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    private String firstname;
-    private String lastname;
 
     @NotEmpty
     private String username;
@@ -32,22 +31,13 @@ public class UserEntity {
     @NotEmpty
     private String password;
 
-    private boolean status;
-
     //fetchtype eager because you always want roles to be shown
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(
             name = "person_roles",
             joinColumns = @JoinColumn(name = "person_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "roles_id", referencedColumnName = "id"))
-    private List<String> roles = new ArrayList<>();
+    private Set<String> roles;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinTable(
-            name = "person_token",
-            joinColumns = @JoinColumn(name = "person_id", referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(name = "token_id", referencedColumnName = "id")
-    )
-    private List<String> tokens = new ArrayList<>();
 
 }

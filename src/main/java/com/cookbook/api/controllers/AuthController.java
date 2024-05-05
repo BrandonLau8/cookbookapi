@@ -18,6 +18,7 @@ import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -50,22 +51,8 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<UserDto> login(@RequestBody LoginDto loginDto, HttpServletResponse response, HttpServletRequest request) {
-        UserDto userDto = authService.login(loginDto);
-        String token = jwtService.generateToken(userDto.getUsername());
-
-        // Add the token to an HTTP-only cookie
-        Cookie tokenCookie = new Cookie("token", token);
-        tokenCookie.setHttpOnly(true);
-        tokenCookie.setPath("/");
-
-        // Add more cookie attributes as needed (secure, SameSite, etc.)
-         tokenCookie.setSecure(true); // Uncomment if using HTTPS
-        // tokenCookie.setSameSite(SameSite.NONE.toString()); // Adjust as needed
-
-        response.addCookie(tokenCookie);
-//        userDto.setToken();
-
-        return new ResponseEntity<>(userDto, HttpStatus.OK);
+        UserDto loggingUser = authService.login(loginDto);
+        return new ResponseEntity<>(loggingUser, HttpStatus.OK);
     }
 
 //    @GetMapping("/status")
