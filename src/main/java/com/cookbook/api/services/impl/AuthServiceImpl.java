@@ -7,10 +7,8 @@ import com.cookbook.api.exceptions.LoginException;
 import com.cookbook.api.mappers.UserMappers;
 import com.cookbook.api.models.RoleEntity;
 import com.cookbook.api.models.RoleType;
-import com.cookbook.api.models.Token;
 import com.cookbook.api.models.UserEntity;
 import com.cookbook.api.repository.RoleRepository;
-import com.cookbook.api.repository.TokenRepository;
 import com.cookbook.api.repository.UserRepository;
 import com.cookbook.api.security.DaoAuthProvider;
 import com.cookbook.api.security.PasswordConfig;
@@ -44,7 +42,6 @@ public class AuthServiceImpl implements AuthService {
 
     private final RoleRepository roleRepository;
 
-    private final TokenRepository tokenRepository;
 
     private final PasswordConfig passwordConfig;
 
@@ -58,17 +55,6 @@ public class AuthServiceImpl implements AuthService {
 
     private final DaoAuthProvider daoAuthProvider;
 
-
-//    @Override
-//    public UserDto login(LoginDto loginDto) {
-//        String username = loginDto.getUsername();
-//
-//        UserEntity userEntity = userService.loadUserByUsername(username);
-//        if (passwordConfig.passwordEncoder().matches(loginDto.getPassword(), userEntity.getPassword())) {
-//            return maptoDto(userEntity);
-//        }
-//        throw new LoginException("Invalid Password", HttpStatus.BAD_REQUEST);
-//    }
 
     @Override
     public UserDto login(LoginDto loginDto) {

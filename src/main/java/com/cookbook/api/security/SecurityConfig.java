@@ -1,6 +1,6 @@
 package com.cookbook.api.security;
 
-import com.cookbook.api.repository.TokenRepository;
+
 import com.cookbook.api.services.JwtService;
 import com.cookbook.api.services.UserService;
 import lombok.RequiredArgsConstructor;
@@ -43,11 +43,9 @@ public class SecurityConfig {
 
     private final JwtService jwtService;
 
-    private final CustomLogoutHandler logoutHandler;
+
 
     private final SecretKeyGenerator secretKeyGenerator;
-
-    private final TokenRepository tokenRepository;
 
     @Autowired
     private final DaoAuthProvider daoAuthProvider;
@@ -88,21 +86,20 @@ public class SecurityConfig {
 
                                 //any endpoint in your app requires that the security context at minimum be authen in order to allow it
                                 .anyRequest().authenticated()
-                )
-                .logout(l->l
-                        .logoutUrl("/api/logout")
-                        .addLogoutHandler(logoutHandler)
-                        .logoutSuccessHandler(((request, response, authentication) -> SecurityContextHolder.clearContext()))
                 );
+//                .logout(l->l
+//                        .logoutUrl("/api/logout")
+//                        .addLogoutHandler(logoutHandler)
+//                        .logoutSuccessHandler(((request, response, authentication) -> SecurityContextHolder.clearContext()))
+//                );
 
 
         return http.build();
     }
 
-    protected void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth
                 .authenticationProvider(daoAuthProvider);
-
     }
 
 

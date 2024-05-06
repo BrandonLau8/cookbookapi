@@ -1,9 +1,7 @@
 package com.cookbook.api.security;
 
 import com.cookbook.api.dto.UserDto;
-import com.cookbook.api.models.Token;
 import com.cookbook.api.models.UserEntity;
-import com.cookbook.api.repository.TokenRepository;
 import com.cookbook.api.services.AuthService;
 import com.cookbook.api.services.JwtService;
 import com.cookbook.api.services.UserService;
@@ -40,8 +38,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final SecretKeyGenerator secretKeyGenerator;
 
-    private final TokenRepository tokenRepository;
-
 
     //Filter intercepts incoming requests
     @Override
@@ -49,6 +45,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
+
         String header = request.getHeader(HttpHeaders.AUTHORIZATION);
 
         if (header != null) {
@@ -60,10 +57,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     Authentication authentication = jwtService.validateToken(authElements[1]);
                     SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                    //Optionally check if token is expired
-                    if (authentication != null && isTokenExpired(authElements[1], secretKeyGenerator.getSecretKey())) {
-                        handleTokenExpiration(authentication);
-                    }
                 } catch (RuntimeException e) {
                     SecurityContextHolder.clearContext();
                     throw e;
@@ -80,33 +73,31 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         return claimsJws.getBody().getExpiration();
     }
 
-    private static boolean isTokenExpired(String token, String secretKey) {
-        Date expiration = extractExpiration(token, secretKey);
-        return expiration.before(new Date());
-    }
+//    private static boolean isTokenExpired(String token, String secretKey) {
+//        Date expiration = extractExpiration(token, secretKey);
+//        return expiration.before(new Date());
+//    };
 
-    ;
-
-    public static Token extractTokenFromAuthentication(Authentication authentication) {
-        if (authentication instanceof UsernamePasswordAuthenticationToken) {
-            UsernamePasswordAuthenticationToken authenticationToken = (UsernamePasswordAuthenticationToken) authentication;
-            UserDto userDto = (UserDto) authenticationToken.getPrincipal();
-
-            Token token = new Token();
-            token.setToken(userDto.getToken());
-
-            return token;
-        }
-        return null;
-    }
-
-    private void handleTokenExpiration(Authentication authentication) {
-        //Update Token status
-        Token expiredToken = extractTokenFromAuthentication(authentication);
-        expiredToken.setStatus(false);
-        tokenRepository.save(expiredToken);
-
-        UserEntity userEntity = expiredToken.getPerson();
-        userEntity.setStatus(false);
-    }
+//    public static Token extractTokenFromAuthentication(Authentication authentication) {
+//        if (authentication instanceof UsernamePasswordAuthenticationToken) {
+//            UsernamePasswordAuthenticationToken authenticationToken = (UsernamePasswordAuthenticationToken) authentication;
+//            UserDto userDto = (UserDto) authenticationToken.getPrincipal();
+//
+//            Token token = new Token();
+//            token.setToken(userDto.getToken());
+//
+//            return token;
+//        }
+//        return null;
+//    }
+//
+//    private void handleTokenExpiration(Authentication authentication) {
+//        //Update Token status
+//        Token expiredToken = extractTokenFromAuthentication(authentication);
+//        expiredToken.setStatus(false);
+//        tokenRepository.save(expiredToken);
+//
+//        UserEntity userEntity = expiredToken.getPerson();
+//        userEntity.setStatus(false);
+//    }
 }

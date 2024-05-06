@@ -15,6 +15,8 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -30,6 +32,8 @@ public class JwtServiceImpl implements JwtService {
     private final SecretKeyGenerator secretKeyGenerator;
 
     private final UserService userService;
+
+    private final UserDetailsService userDetailsService;
 
 
     @Override
@@ -52,9 +56,9 @@ public class JwtServiceImpl implements JwtService {
         DecodedJWT decodedJWT = verifyToken(token);
 
         String username = decodedJWT.getSubject();
-        UserDto userDto = userService.findByUsername(username);
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-        return new UsernamePasswordAuthenticationToken(userDto, null, Collections.emptyList());
+        return new UsernamePasswordAuthenticationToken(userDetails, null, Collections.emptyList());
     }
 
     DecodedJWT verifyToken(String token) {
