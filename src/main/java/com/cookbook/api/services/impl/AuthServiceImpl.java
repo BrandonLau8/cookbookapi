@@ -12,15 +12,18 @@ import com.cookbook.api.repository.RoleRepository;
 import com.cookbook.api.repository.UserRepository;
 import com.cookbook.api.security.DaoAuthProvider;
 import com.cookbook.api.security.PasswordConfig;
+import com.cookbook.api.security.UserDetailsServiceImpl;
 import com.cookbook.api.services.AuthService;
 import com.cookbook.api.services.JwtService;
 import com.cookbook.api.services.UserService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -32,16 +35,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-
-@RequiredArgsConstructor
 @Data
 @Service
+@DependsOn("userDetailsService") // Specify the name of the UserDetailsService bean
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
 
     private final RoleRepository roleRepository;
-
 
     private final PasswordConfig passwordConfig;
 
@@ -55,6 +56,16 @@ public class AuthServiceImpl implements AuthService {
 
     private final DaoAuthProvider daoAuthProvider;
 
+    public AuthServiceImpl(UserRepository userRepository, RoleRepository roleRepository, PasswordConfig passwordConfig, UserService userService, JwtService jwtService, UserMappers userMappers, UserDetailsService userDetailsService, DaoAuthProvider daoAuthProvider) {
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.passwordConfig = passwordConfig;
+        this.userService = userService;
+        this.jwtService = jwtService;
+        this.userMappers = userMappers;
+        this.userDetailsService = userDetailsService;
+        this.daoAuthProvider = daoAuthProvider;
+    }
 
     @Override
     public UserDto login(LoginDto loginDto) {

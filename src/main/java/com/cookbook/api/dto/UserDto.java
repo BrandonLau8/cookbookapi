@@ -1,5 +1,6 @@
 package com.cookbook.api.dto;
 
+import com.cookbook.api.models.RoleEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,5 +16,5 @@ public class UserDto {
     private int id;
     private String username;
     private String token;
-    private Set<String> roles;
+    private Set<RoleEntity> roles;
 }

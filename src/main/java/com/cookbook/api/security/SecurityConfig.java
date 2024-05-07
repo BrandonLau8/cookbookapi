@@ -30,29 +30,31 @@ import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final CorsConfigurationSource corsConfigurationSource;
-
     private final UserService userService;
-
     private final PasswordConfig passwordConfig;
-
     private final JwtAuthFilter jwtAuthFilter;
-
     private final JwtService jwtService;
-
-
-
     private final SecretKeyGenerator secretKeyGenerator;
-
-    @Autowired
     private final DaoAuthProvider daoAuthProvider;
+    private final UserDetailsService userDetailsService;
 
-//    private final AuthEntryPoint authEntryPoint;
-
-
+    public SecurityConfig(CorsConfigurationSource corsConfigurationSource,
+                          UserService userService,
+                          PasswordConfig passwordConfig,
+                          JwtAuthFilter jwtAuthFilter,
+                          JwtService jwtService, SecretKeyGenerator secretKeyGenerator, DaoAuthProvider daoAuthProvider, UserDetailsService userDetailsService) {
+        this.corsConfigurationSource = corsConfigurationSource;
+        this.userService = userService;
+        this.passwordConfig = passwordConfig;
+        this.jwtAuthFilter = jwtAuthFilter;
+        this.jwtService = jwtService;
+        this.secretKeyGenerator = secretKeyGenerator;
+        this.daoAuthProvider = daoAuthProvider;
+        this.userDetailsService = userDetailsService;
+    }
 
     @Bean //manage the lifecycle of the bean.
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -62,10 +64,10 @@ public class SecurityConfig {
 //                .exceptionHandling(exceptionHandling->
 //                        exceptionHandling.authenticationEntryPoint(authEntryPoint))
 
-//                .addFilterBefore(new JwtAuthFilter(jwtService, secretKeyGenerator, tokenRepository), BasicAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthFilter, BasicAuthenticationFilter.class)
 //                //protect against cross site forgery using both sync token pattern or same site attribute.
 //                //during dev, disabling helps
-                .csrf(csrf->csrf.disable())
+                .csrf(csrf -> csrf.disable())
 
                 .cors((cors) -> cors
                         .configurationSource(corsConfigurationSource))
@@ -97,50 +99,12 @@ public class SecurityConfig {
         return http.build();
     }
 
+
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth
-                .authenticationProvider(daoAuthProvider);
+        auth.userDetailsService(userDetailsService)
+                .passwordEncoder(passwordConfig.passwordEncoder());
+//        auth.authenticationProvider(daoAuthProvider);
     }
-
-
-
-
-//    @Bean
-//    public AuthenticationManager authenticationManager(
-//            UserService userService,
-//            PasswordConfig passwordConfig) {
-//        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-//        authenticationProvider.setUserDetailsService(userService);
-//        authenticationProvider.setPasswordEncoder(passwordConfig.passwordEncoder());
-//
-//        return new ProviderManager(authenticationProvider);
-//    }
-
-//    @Bean
-//    public DataSource dataSource() {
-//        DriverManagerDataSource dataSource = new DriverManagerDataSource();
-//        dataSource.setDriverClassName("org.postgresql.Driver");
-//        dataSource.setUrl("jdbc:postgresql://localhost:5432/cookbookapi"); // Update with your PostgreSQL URL
-//        dataSource.setUsername("postgres"); // Update with your PostgreSQL username
-//        dataSource.setPassword("password"); // Update with your PostgreSQL password
-//        return dataSource;
-//    }
-
-//    @Bean
-//    public UserDetailsService userDetailsService() {
-//        UserDetails userDetails = User.builder()
-//                .username("user")
-//                   .password(passwordEncoder().encode("password"))
-//                .roles("USER")
-//                .build();
-//        UserDetails adminDetails = User.builder()
-//                .username("admin")
-//                .password(passwordEncoder().encode("password"))
-//                .roles("ADMIN")
-//                .build();
-//
-//        return new InMemoryUserDetailsManager(userDetails, adminDetails);
-//    }
 
 }
 

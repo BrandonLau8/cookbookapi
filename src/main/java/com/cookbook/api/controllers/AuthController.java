@@ -13,35 +13,34 @@ import com.cookbook.api.services.UserService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/auth/")
+@DependsOn("userDetailsService") // Specify the name of the UserDetailsService bean
+
 public class AuthController {
 
-
-    @Autowired
-    private final UserService userService;
-
-    @Autowired
     private final AuthService authService;
+    private final UserDetailsService userDetailsService;
 
     @Autowired
-    private final JwtService jwtService;
-
-    @Autowired
-    private final UserRepository userRepository;
-
+    public AuthController(AuthService authService, UserDetailsService userDetailsService) {
+        this.authService = authService;
+        this.userDetailsService = userDetailsService;
+    }
 
     @PostMapping("/register")
     public ResponseEntity<UserDto> register(@RequestBody RegisterDto registerDto) {
@@ -55,18 +54,6 @@ public class AuthController {
         return new ResponseEntity<>(loggingUser, HttpStatus.OK);
     }
 
-//    @GetMapping("/status")
-//    public ResponseEntity<Boolean> getTokenStatus(LoginDto loginDto) {
-//        UserEntity userEntity = userRepository.findByUsername(loginDto.getUsername()).orElse(null);
-//        if (userEntity == null) {
-//            return ResponseEntity.notFound().build();
-//        }
-//        // Check if any of the user's tokens are marked as logged out
-//        UserDto userDto = new UserDto();;
-//        userDto.setLoggedOut(userEntity.isLoggedOut());
-//        boolean isUserLoggedOut = userDto.isLoggedOut();
-//        return ResponseEntity.ok(isUserLoggedOut);
-//    }
 }
 
 

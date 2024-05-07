@@ -1,6 +1,7 @@
 package com.cookbook.api.security;
 
 import lombok.Data;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 import java.security.SecureRandom;
@@ -8,6 +9,7 @@ import java.util.Base64;
 
 @Data
 @Component
+@DependsOn("userDetailsService") // Specify the name of the UserDetailsService bean
 public class SecretKeyGenerator {
 
     private String secretKey;

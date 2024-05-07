@@ -16,6 +16,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.http.HttpHeaders;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -29,15 +30,20 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Date;
 
-@RequiredArgsConstructor
 @Data
 @Component
+@DependsOn("userDetailsService") // Specify the name of the UserDetailsService bean
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
 
     private final SecretKeyGenerator secretKeyGenerator;
 
+    @Autowired
+    public JwtAuthFilter(JwtService jwtService, SecretKeyGenerator secretKeyGenerator) {
+        this.jwtService = jwtService;
+        this.secretKeyGenerator = secretKeyGenerator;
+    }
 
     //Filter intercepts incoming requests
     @Override
@@ -66,38 +72,4 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request, response);
     }
-
-    public static Date extractExpiration(String token, String secretKey) {
-        Jws<Claims> claimsJws = Jwts.parserBuilder().setSigningKey(secretKey)
-                        .requireIssuer("http://localhost:8080/auth").build().parseClaimsJws(token);
-        return claimsJws.getBody().getExpiration();
-    }
-
-//    private static boolean isTokenExpired(String token, String secretKey) {
-//        Date expiration = extractExpiration(token, secretKey);
-//        return expiration.before(new Date());
-//    };
-
-//    public static Token extractTokenFromAuthentication(Authentication authentication) {
-//        if (authentication instanceof UsernamePasswordAuthenticationToken) {
-//            UsernamePasswordAuthenticationToken authenticationToken = (UsernamePasswordAuthenticationToken) authentication;
-//            UserDto userDto = (UserDto) authenticationToken.getPrincipal();
-//
-//            Token token = new Token();
-//            token.setToken(userDto.getToken());
-//
-//            return token;
-//        }
-//        return null;
-//    }
-//
-//    private void handleTokenExpiration(Authentication authentication) {
-//        //Update Token status
-//        Token expiredToken = extractTokenFromAuthentication(authentication);
-//        expiredToken.setStatus(false);
-//        tokenRepository.save(expiredToken);
-//
-//        UserEntity userEntity = expiredToken.getPerson();
-//        userEntity.setStatus(false);
-//    }
 }

@@ -1,27 +1,30 @@
 package com.cookbook.api.security;
 
+import com.cookbook.api.models.RoleEntity;
 import com.cookbook.api.models.UserEntity;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Data
-@RequiredArgsConstructor
 public class UserDetailsImpl implements UserDetails {
     private final String username;
     private final String password;
     private final Set<GrantedAuthority> roles;
 
+    @Autowired
     public UserDetailsImpl(UserEntity userEntity) {
         this.username = userEntity.getUsername();
         this.password = userEntity.getPassword();
         this.roles = userEntity.getRoles().stream()
-                .map(SimpleGrantedAuthority::new)
+                .map((RoleEntity role) -> new SimpleGrantedAuthority(role.getName().name()))
                 .collect(Collectors.toSet());
     }
 

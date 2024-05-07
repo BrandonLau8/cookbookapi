@@ -14,6 +14,8 @@ import com.cookbook.api.security.PasswordConfig;
 import com.cookbook.api.services.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -24,14 +26,20 @@ import org.springframework.stereotype.Service;
 import javax.management.relation.Role;
 import java.util.Optional;
 
-@RequiredArgsConstructor
+
 @Service
+@DependsOn("userDetailsService") // Specify the name of the UserDetailsService bean
 public class UserServiceImpl implements UserService{
 
     private final UserRepository userRepository;
 
     private final UserMappers userMappers;
 
+    @Autowired
+    public UserServiceImpl(UserRepository userRepository, UserMappers userMappers) {
+        this.userRepository = userRepository;
+        this.userMappers = userMappers;
+    }
 
     @Override
     public UserDto findByUsername(String username) {

@@ -13,6 +13,8 @@ import com.cookbook.api.services.JwtService;
 import com.cookbook.api.services.UserService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,9 +24,10 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.Date;
 
-@RequiredArgsConstructor
+
 @Data
 @Service
+@DependsOn("userDetailsService") // Specify the name of the UserDetailsService bean
 public class JwtServiceImpl implements JwtService {
 
 //    private final Key SECRET_KEY = Keys.secretKeyFor(io.jsonwebtoken.SignatureAlgorithm.HS256);
@@ -35,6 +38,12 @@ public class JwtServiceImpl implements JwtService {
 
     private final UserDetailsService userDetailsService;
 
+    @Autowired
+    public JwtServiceImpl(SecretKeyGenerator secretKeyGenerator, UserService userService, UserDetailsService userDetailsService) {
+        this.secretKeyGenerator = secretKeyGenerator;
+        this.userService = userService;
+        this.userDetailsService = userDetailsService;
+    }
 
     @Override
     public String generateToken(String username) {
