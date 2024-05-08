@@ -9,12 +9,20 @@ import lombok.NoArgsConstructor;
 import java.util.Set;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Builder
 public class UserDto {
     private int id;
     private String username;
     private String token;
     private Set<RoleEntity> roles;
+
+    public UserDto() {
+    }
+
+    public UserDto(int id, String username, String token, Set<RoleEntity> roles) {
+        this.id = id;
+        this.username = username;
+        this.token = token;
+        this.roles = roles;
+    }
 }

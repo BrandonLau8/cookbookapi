@@ -1,5 +1,6 @@
 package com.cookbook.api.security;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +20,7 @@ public class WebConfig {
 
     private static final Long MAX_AGE = 3600L;
     private static final int CORS_FILTER_ORDER = -102;
+
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {

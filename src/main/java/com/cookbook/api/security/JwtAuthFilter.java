@@ -32,7 +32,6 @@ import java.util.Date;
 
 @Data
 @Component
-@DependsOn("userDetailsService") // Specify the name of the UserDetailsService bean
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;

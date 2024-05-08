@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
@@ -22,15 +23,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
-@DependsOn("userDetailsService") // Specify the name of the UserDetailsService bean
-public class DaoAuthProvider extends DaoAuthenticationProvider {
+public class DaoAuthProvider implements AuthenticationProvider {
 
-    private final UserDetailsService userDetailsService;
+    private final UserDetailsServiceImpl userDetailsService;
 
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public DaoAuthProvider(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
+    public DaoAuthProvider(UserDetailsServiceImpl userDetailsService, PasswordEncoder passwordEncoder) {
         this.userDetailsService = userDetailsService;
         this.passwordEncoder = passwordEncoder;
     }

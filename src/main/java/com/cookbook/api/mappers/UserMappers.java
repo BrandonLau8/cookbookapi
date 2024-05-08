@@ -14,9 +14,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 @Component
-@DependsOn("userDetailsService") // Specify the name of the UserDetailsService bean
 public class UserMappers {
-
     private final PasswordConfig passwordConfig;
 
     private final RoleRepository roleRepository;

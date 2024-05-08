@@ -15,6 +15,7 @@ import com.cookbook.api.services.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -28,7 +29,7 @@ import java.util.Optional;
 
 
 @Service
-@DependsOn("userDetailsService") // Specify the name of the UserDetailsService bean
+@ComponentScan
 public class UserServiceImpl implements UserService{
 
     private final UserRepository userRepository;

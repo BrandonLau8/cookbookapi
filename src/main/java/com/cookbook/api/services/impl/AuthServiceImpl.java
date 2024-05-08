@@ -18,6 +18,7 @@ import com.cookbook.api.services.JwtService;
 import com.cookbook.api.services.UserService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -37,7 +38,6 @@ import java.util.stream.Collectors;
 
 @Data
 @Service
-@DependsOn("userDetailsService") // Specify the name of the UserDetailsService bean
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
@@ -52,11 +52,12 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserMappers userMappers;
 
-    private final UserDetailsService userDetailsService;
+    private final UserDetailsServiceImpl userDetailsService;
 
     private final DaoAuthProvider daoAuthProvider;
 
-    public AuthServiceImpl(UserRepository userRepository, RoleRepository roleRepository, PasswordConfig passwordConfig, UserService userService, JwtService jwtService, UserMappers userMappers, UserDetailsService userDetailsService, DaoAuthProvider daoAuthProvider) {
+    @Autowired
+    public AuthServiceImpl(UserRepository userRepository, RoleRepository roleRepository, PasswordConfig passwordConfig, UserService userService, JwtService jwtService, UserMappers userMappers, UserDetailsServiceImpl userDetailsService, DaoAuthProvider daoAuthProvider) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordConfig = passwordConfig;

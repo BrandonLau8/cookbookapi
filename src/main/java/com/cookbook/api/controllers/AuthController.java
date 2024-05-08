@@ -29,8 +29,6 @@ import java.net.URI;
 
 @RestController
 @RequestMapping("/api/auth/")
-@DependsOn("userDetailsService") // Specify the name of the UserDetailsService bean
-
 public class AuthController {
 
     private final AuthService authService;

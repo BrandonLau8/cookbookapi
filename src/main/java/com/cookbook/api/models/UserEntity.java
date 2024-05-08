@@ -2,25 +2,20 @@ package com.cookbook.api.models;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
+import lombok.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 @Entity
 @Table(name = "person")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
+@RequiredArgsConstructor
+@AllArgsConstructor
 public class UserEntity {
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -38,6 +33,4 @@ public class UserEntity {
             joinColumns = @JoinColumn(name = "person_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "roles_id", referencedColumnName = "id"))
     private Set<RoleEntity> roles;
-
-
 }

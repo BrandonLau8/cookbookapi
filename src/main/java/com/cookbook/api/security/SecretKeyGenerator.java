@@ -9,7 +9,6 @@ import java.util.Base64;
 
 @Data
 @Component
-@DependsOn("userDetailsService") // Specify the name of the UserDetailsService bean
 public class SecretKeyGenerator {
 
     private String secretKey;

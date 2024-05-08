@@ -1,12 +1,14 @@
 package com.cookbook.api.security;
 
 
+import com.cookbook.api.repository.UserRepository;
 import com.cookbook.api.services.JwtService;
 import com.cookbook.api.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
@@ -31,7 +33,6 @@ import org.springframework.web.cors.CorsConfigurationSource;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-
     private final CorsConfigurationSource corsConfigurationSource;
     private final UserService userService;
     private final PasswordConfig passwordConfig;
@@ -39,13 +40,14 @@ public class SecurityConfig {
     private final JwtService jwtService;
     private final SecretKeyGenerator secretKeyGenerator;
     private final DaoAuthProvider daoAuthProvider;
-    private final UserDetailsService userDetailsService;
+    private final UserRepository userRepository;
 
-    public SecurityConfig(CorsConfigurationSource corsConfigurationSource,
-                          UserService userService,
-                          PasswordConfig passwordConfig,
-                          JwtAuthFilter jwtAuthFilter,
-                          JwtService jwtService, SecretKeyGenerator secretKeyGenerator, DaoAuthProvider daoAuthProvider, UserDetailsService userDetailsService) {
+    private final UserDetailsServiceImpl userDetailsService;
+
+
+    @Autowired
+    public SecurityConfig(UserDetailsServiceImpl userDetailsService, CorsConfigurationSource corsConfigurationSource, UserService userService, PasswordConfig passwordConfig, JwtAuthFilter jwtAuthFilter, JwtService jwtService, SecretKeyGenerator secretKeyGenerator, DaoAuthProvider daoAuthProvider, UserRepository userRepository) {
+        this.userDetailsService = userDetailsService;
         this.corsConfigurationSource = corsConfigurationSource;
         this.userService = userService;
         this.passwordConfig = passwordConfig;
@@ -53,8 +55,16 @@ public class SecurityConfig {
         this.jwtService = jwtService;
         this.secretKeyGenerator = secretKeyGenerator;
         this.daoAuthProvider = daoAuthProvider;
-        this.userDetailsService = userDetailsService;
+        this.userRepository = userRepository;
     }
+
+    @Autowired
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.userDetailsService(userDetailsService)
+                .passwordEncoder(passwordConfig.passwordEncoder());
+        auth.authenticationProvider(daoAuthProvider);
+    }
+
 
     @Bean //manage the lifecycle of the bean.
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -77,6 +87,7 @@ public class SecurityConfig {
 //                //stateless means you do not wish to create sessions which is related to logging users out.
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .userDetailsService(userDetailsService)
 
                 //usernamepassword authen filter
                 .authorizeHttpRequests(requests -> requests
@@ -97,13 +108,6 @@ public class SecurityConfig {
 
 
         return http.build();
-    }
-
-
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService)
-                .passwordEncoder(passwordConfig.passwordEncoder());
-//        auth.authenticationProvider(daoAuthProvider);
     }
 
 }

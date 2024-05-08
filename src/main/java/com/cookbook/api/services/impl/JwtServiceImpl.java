@@ -27,7 +27,6 @@ import java.util.Date;
 
 @Data
 @Service
-@DependsOn("userDetailsService") // Specify the name of the UserDetailsService bean
 public class JwtServiceImpl implements JwtService {
 
 //    private final Key SECRET_KEY = Keys.secretKeyFor(io.jsonwebtoken.SignatureAlgorithm.HS256);
