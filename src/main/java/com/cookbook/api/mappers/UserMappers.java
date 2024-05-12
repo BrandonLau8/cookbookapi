@@ -27,7 +27,6 @@ public class UserMappers {
 
     public UserDto maptoDto(UserEntity userEntity) {
         UserDto userDto = new UserDto();
-        userDto.setId(userEntity.getId());
         userDto.setUsername(userEntity.getUsername());
         userDto.setRoles(userEntity.getRoles());
         return userDto;

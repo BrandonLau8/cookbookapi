@@ -4,11 +4,10 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
-@Setter
-@Getter
+@Data
 @Entity
 @Table(name = "roles")
-@RequiredArgsConstructor
+@NoArgsConstructor
 @AllArgsConstructor
 public class RoleEntity {
 

@@ -11,6 +11,8 @@ import com.cookbook.api.dto.UserDto;
 import com.cookbook.api.security.SecretKeyGenerator;
 import com.cookbook.api.services.JwtService;
 import com.cookbook.api.services.UserService;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.Date;
+import java.util.function.Function;
 
 
 @Data
@@ -76,5 +79,17 @@ public class JwtServiceImpl implements JwtService {
         return verifier.verify(token);
     }
 
-
+//    public<T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+//        final Claims claims = extractAllClaims(token);
+//        return claimsResolver.apply(claims);
+//    }
+//
+//    public Claims extractAllClaims(String token) {
+//        return Jwts
+//                .parserBuilder()
+//    }
+//
+//    public String extractUsername(String token) {
+//        return extractClaim(token, Claims::getSubject);
+//    }
 }

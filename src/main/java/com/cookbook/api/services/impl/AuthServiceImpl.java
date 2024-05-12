@@ -1,13 +1,14 @@
 package com.cookbook.api.services.impl;
 
 import com.cookbook.api.dto.LoginDto;
+import com.cookbook.api.dto.RefreshTokenDto;
 import com.cookbook.api.dto.RegisterDto;
 import com.cookbook.api.dto.UserDto;
 import com.cookbook.api.exceptions.LoginException;
 import com.cookbook.api.mappers.UserMappers;
-import com.cookbook.api.models.RoleEntity;
-import com.cookbook.api.models.RoleType;
+import com.cookbook.api.models.RefreshToken;
 import com.cookbook.api.models.UserEntity;
+import com.cookbook.api.repository.RefreshTokenRepository;
 import com.cookbook.api.repository.RoleRepository;
 import com.cookbook.api.repository.UserRepository;
 import com.cookbook.api.security.DaoAuthProvider;
@@ -15,26 +16,19 @@ import com.cookbook.api.security.PasswordConfig;
 import com.cookbook.api.security.UserDetailsServiceImpl;
 import com.cookbook.api.services.AuthService;
 import com.cookbook.api.services.JwtService;
+import com.cookbook.api.services.RefreshTokenService;
 import com.cookbook.api.services.UserService;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.time.Instant;
 
 @Data
 @Service
@@ -56,8 +50,12 @@ public class AuthServiceImpl implements AuthService {
 
     private final DaoAuthProvider daoAuthProvider;
 
+    private final RefreshTokenService refreshTokenService;
+
+    private final RefreshTokenRepository refreshTokenRepository;
+
     @Autowired
-    public AuthServiceImpl(UserRepository userRepository, RoleRepository roleRepository, PasswordConfig passwordConfig, UserService userService, JwtService jwtService, UserMappers userMappers, UserDetailsServiceImpl userDetailsService, DaoAuthProvider daoAuthProvider) {
+    public AuthServiceImpl(UserRepository userRepository, RoleRepository roleRepository, PasswordConfig passwordConfig, UserService userService, JwtService jwtService, UserMappers userMappers, UserDetailsServiceImpl userDetailsService, DaoAuthProvider daoAuthProvider, RefreshTokenService refreshTokenService, RefreshTokenRepository refreshTokenRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordConfig = passwordConfig;
@@ -66,37 +64,79 @@ public class AuthServiceImpl implements AuthService {
         this.userMappers = userMappers;
         this.userDetailsService = userDetailsService;
         this.daoAuthProvider = daoAuthProvider;
+        this.refreshTokenService = refreshTokenService;
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
     @Override
-    public UserDto login(LoginDto loginDto) {
-        Authentication authentication = new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword());
-        Authentication authenticated = daoAuthProvider.authenticate(authentication);
+    public UserDto refreshLogin(RefreshTokenDto refreshTokenDto) {
+        //Find Refresh token
+        RefreshToken userToken = refreshTokenRepository.findByToken(refreshTokenDto.getToken()).orElseThrow(() -> new RuntimeException("No refresh token"));
 
-        // If authentication is successful, generate a token or return user information
-        UserDetails userDetails = (UserDetails) authenticated.getPrincipal();
-        String jwt = jwtService.generateToken(userDetails.getUsername());
-        UserDto userDto = userMappers.detailToDto(userDetails);
-        userDto.setToken(jwt);
+
+        //If token found, generate a new Access token
+        String jwt = jwtService.generateToken(userToken.getPerson().getUsername());
+
+        //Update refreshToken
+        userToken.setExpiryDate(Instant.now().plusMillis(60000));
+
+        //Set new access token to userdto
+        UserEntity currentUser = userRepository.findByUsername(userToken.getPerson().getUsername()).orElseThrow(() -> new RuntimeException("Cannot find username"));
+        UserDto userDto = userMappers.maptoDto(currentUser);
+        userDto.setAccessToken(jwt);
+        userDto.setToken(userToken.getToken());
 
         return userDto;
     }
 
     @Override
-    public UserDto register(RegisterDto registerDto) {
-        userRepository.findByUsername(registerDto.getUsername())
-                .ifPresent((userEntity) ->
-                {throw new LoginException("User already exists", HttpStatus.BAD_REQUEST);
+    public UserDto login(LoginDto loginDto) {
+        //Auth with dao
+        Authentication authentication = new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword());
+        Authentication authenticated = daoAuthProvider.authenticate(authentication);
+
+        if (authenticated.isAuthenticated()) {
+            // If authentication is successful, generate a access token and refresh token using username from principal
+            if (authenticated.getPrincipal() instanceof UserDetails) {
+                UserDetails userDetails = (UserDetails) authenticated.getPrincipal();
+
+                String jwt = jwtService.generateToken(userDetails.getUsername());
+
+                //Put token into userdto
+                UserDto userDto = userMappers.detailToDto(userDetails);
+                userDto.setAccessToken(jwt);
+
+
+                //check if there are any existing refresh tokens
+                refreshTokenRepository.findByPersonUsername(userDetails.getUsername()).ifPresentOrElse((existingRefreshToken) -> {
+                    existingRefreshToken.setExpiryDate(Instant.now().plusMillis(600000));
+                    refreshTokenRepository.save(existingRefreshToken);
+                    userDto.setToken(existingRefreshToken.getToken());
+                }, () -> {
+                    RefreshToken newRefreshToken = refreshTokenService.createRefeshToken(userDto.getUsername());
+                    userDto.setToken(newRefreshToken.getToken());
                 });
+
+                return userDto;
+            } else {
+                throw new AuthenticationCredentialsNotFoundException("Not authenticated");
+            }
+        } else {
+            throw new LoginException("Login error", HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @Override
+    public UserDto register(RegisterDto registerDto) {
+        userRepository.findByUsername(registerDto.getUsername()).ifPresent((userEntity) -> {
+            throw new LoginException("User already exists", HttpStatus.BAD_REQUEST);
+        });
 
         UserEntity userEntity = userMappers.maptoEntity(registerDto);
         userRepository.save(userEntity);
 
         return userMappers.maptoDto(userEntity);
     }
-
-
-
 
 
 //    private List<Token> saveTokens(String jwt, UserEntity userEntity) {

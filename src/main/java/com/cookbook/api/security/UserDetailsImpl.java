@@ -2,11 +2,13 @@ package com.cookbook.api.security;
 
 import com.cookbook.api.models.RoleEntity;
 import com.cookbook.api.models.UserEntity;
+import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,28 +18,31 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Data
-@RequiredArgsConstructor
-@NoArgsConstructor(force = true)
 @Component
+@ComponentScan
 public class UserDetailsImpl implements UserDetails {
     private final String username;
     private final String password;
-    private final Set<GrantedAuthority> roles;
 
 
+//    private final Set<GrantedAuthority> roles;
+
+    @Autowired
     public UserDetailsImpl(UserEntity userEntity) {
         this.username = userEntity.getUsername();
         this.password = userEntity.getPassword();
-        this.roles = userEntity.getRoles().stream()
-                .map((RoleEntity role) -> new SimpleGrantedAuthority(role.getName().name()))
-                .collect(Collectors.toSet());
+//        assert userEntity.getRoles() != null;
+//        this.roles = userEntity.getRoles().stream()
+//                .map((RoleEntity role) -> new SimpleGrantedAuthority(role.getName().name()))
+//                .collect(Collectors.toSet());
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles.stream()
-                .map(role -> new SimpleGrantedAuthority(role.getAuthority()))
-                .collect(Collectors.toSet());
+        return null;
+//        return roles.stream()
+//                .map(role -> new SimpleGrantedAuthority(role.getAuthority()))
+//                .collect(Collectors.toSet());
     }
 
     @Override

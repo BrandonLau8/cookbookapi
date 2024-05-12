@@ -6,8 +6,6 @@ import lombok.*;
 @NoArgsConstructor
 @Data
 @Builder
-public class LoginDto {
-    private String username;
-    private String password;
-
+public class RefreshTokenDto {
+    private String token;
 }

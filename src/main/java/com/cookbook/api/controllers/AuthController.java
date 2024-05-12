@@ -2,6 +2,7 @@ package com.cookbook.api.controllers;
 
 
 import com.cookbook.api.dto.LoginDto;
+import com.cookbook.api.dto.RefreshTokenDto;
 import com.cookbook.api.dto.RegisterDto;
 import com.cookbook.api.dto.UserDto;
 
@@ -43,13 +44,25 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<UserDto> register(@RequestBody RegisterDto registerDto) {
         UserDto createdUser = authService.register(registerDto);
-        return ResponseEntity.created(URI.create("/users/" + createdUser.getId())).body(createdUser);
+//        return ResponseEntity.created(URI.create("/users/" + createdUser.getId())).body(createdUser);
+        return new ResponseEntity<>(createdUser, HttpStatus.OK);
     }
 
     @PostMapping("/login")
     public ResponseEntity<UserDto> login(@RequestBody LoginDto loginDto, HttpServletResponse response, HttpServletRequest request) {
         UserDto loggingUser = authService.login(loginDto);
         return new ResponseEntity<>(loggingUser, HttpStatus.OK);
+    }
+
+    @PostMapping("/refreshlogin")
+    public ResponseEntity<UserDto> refreshLogin(@RequestBody RefreshTokenDto refreshTokenDto) {
+        UserDto refreshUser = authService.refreshLogin(refreshTokenDto);
+        return new ResponseEntity<>(refreshUser, HttpStatus.OK);
+    }
+
+    @GetMapping("/test")
+    public String test() {
+        return "hello";
     }
 
 }
