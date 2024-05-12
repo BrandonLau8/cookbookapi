@@ -34,28 +34,19 @@ import org.springframework.web.cors.CorsConfigurationSource;
 @EnableWebSecurity
 public class SecurityConfig {
     private final CorsConfigurationSource corsConfigurationSource;
-    private final UserService userService;
     private final PasswordConfig passwordConfig;
     private final JwtAuthFilter jwtAuthFilter;
-    private final JwtService jwtService;
-    private final SecretKeyGenerator secretKeyGenerator;
     private final DaoAuthProvider daoAuthProvider;
-    private final UserRepository userRepository;
-
     private final UserDetailsServiceImpl userDetailsService;
+    private final AuthEntryPoint authEntryPoint;
 
-
-    @Autowired
-    public SecurityConfig(UserDetailsServiceImpl userDetailsService, CorsConfigurationSource corsConfigurationSource, UserService userService, PasswordConfig passwordConfig, JwtAuthFilter jwtAuthFilter, JwtService jwtService, SecretKeyGenerator secretKeyGenerator, DaoAuthProvider daoAuthProvider, UserRepository userRepository) {
-        this.userDetailsService = userDetailsService;
+    public SecurityConfig(CorsConfigurationSource corsConfigurationSource, PasswordConfig passwordConfig, JwtAuthFilter jwtAuthFilter, DaoAuthProvider daoAuthProvider, UserDetailsServiceImpl userDetailsService, AuthEntryPoint authEntryPoint) {
         this.corsConfigurationSource = corsConfigurationSource;
-        this.userService = userService;
         this.passwordConfig = passwordConfig;
         this.jwtAuthFilter = jwtAuthFilter;
-        this.jwtService = jwtService;
-        this.secretKeyGenerator = secretKeyGenerator;
         this.daoAuthProvider = daoAuthProvider;
-        this.userRepository = userRepository;
+        this.userDetailsService = userDetailsService;
+        this.authEntryPoint = authEntryPoint;
     }
 
     @Autowired
@@ -70,33 +61,29 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                //ability to have exception handling
-//                .exceptionHandling(exceptionHandling->
-//                        exceptionHandling.authenticationEntryPoint(authEntryPoint))
+                //meant to handle auth exceptions
+                .exceptionHandling(exceptionHandling->
+                        exceptionHandling.authenticationEntryPoint(authEntryPoint))
 
+                //JWT Auth Filter
                 .addFilterBefore(jwtAuthFilter, BasicAuthenticationFilter.class)
+
 //                //protect against cross site forgery using both sync token pattern or same site attribute.
 //                //during dev, disabling helps
                 .csrf(csrf -> csrf.disable())
 
                 .cors((cors) -> cors
                         .configurationSource(corsConfigurationSource))
-//
-//
-//
-//                //stateless means you do not wish to create sessions which is related to logging users out.
+
+//                //stateless means you do not wish to keep sessions on server. all requests from client require necessary info like tokens, etc...
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .userDetailsService(userDetailsService)
 
                 //usernamepassword authen filter
                 .authorizeHttpRequests(requests -> requests
 //                        //learn about mvcMatchers as well
-//                        .requestMatchers("/api/**").hasAuthority("USER")
-//                        .requestMatchers("/api/food/**").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register").permitAll()
-                                .requestMatchers("/api/foods").permitAll()
-
+                                .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register", "/api/auth/refreshlogin").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/foods").permitAll()
                                 //any endpoint in your app requires that the security context at minimum be authen in order to allow it
                                 .anyRequest().authenticated()
                 );

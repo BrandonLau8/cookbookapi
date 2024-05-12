@@ -11,6 +11,7 @@ import com.cookbook.api.models.UserEntity;
 import com.cookbook.api.repository.RefreshTokenRepository;
 import com.cookbook.api.repository.RoleRepository;
 import com.cookbook.api.repository.UserRepository;
+import com.cookbook.api.security.AuthEntryPoint;
 import com.cookbook.api.security.DaoAuthProvider;
 import com.cookbook.api.security.PasswordConfig;
 import com.cookbook.api.security.UserDetailsServiceImpl;
@@ -22,6 +23,7 @@ import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
@@ -119,10 +121,12 @@ public class AuthServiceImpl implements AuthService {
 
                 return userDto;
             } else {
-                throw new AuthenticationCredentialsNotFoundException("Not authenticated");
+                throw new BadCredentialsException("User principal is not of type UserDetails");
             }
         } else {
-            throw new LoginException("Login error", HttpStatus.BAD_REQUEST);
+//            throw new BadCredentialsException("Authentication Failed");
+            throw new LoginException("Login error", HttpStatus.UNAUTHORIZED);
+
         }
     }
 
