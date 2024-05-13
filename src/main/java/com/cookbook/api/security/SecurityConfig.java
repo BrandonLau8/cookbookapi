@@ -86,12 +86,14 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.GET, "/api/foods").permitAll()
                                 //any endpoint in your app requires that the security context at minimum be authen in order to allow it
                                 .anyRequest().authenticated()
+                )
+                .logout(l->l
+                        .logoutUrl("/logout") // specify the URL for logout
+                        .logoutSuccessUrl("/") // specify the URL to redirect to after logout
+                        .invalidateHttpSession(true) // invalidate the HttpSession
+                        .deleteCookies("JSESSIONID") // delete cookies (if any)
+                        .permitAll() // allow all users to access the logout URL
                 );
-//                .logout(l->l
-//                        .logoutUrl("/api/logout")
-//                        .addLogoutHandler(logoutHandler)
-//                        .logoutSuccessHandler(((request, response, authentication) -> SecurityContextHolder.clearContext()))
-//                );
 
 
         return http.build();

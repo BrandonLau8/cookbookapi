@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.http.HttpHeaders;
 import org.springframework.lang.NonNull;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -51,18 +52,24 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
 
+        //Get the Request Authorization Header
         String header = request.getHeader(HttpHeaders.AUTHORIZATION);
 
+        //Split Bearer from token from Authorization Header
         if (header != null) {
             String[] authElements = header.split(" ");
 
+            //Check if Header was properly split
             if (authElements.length == 2 && "Bearer".equals(authElements[0])) {
                 try {
-                    //Validate and possibly refresh token
+                    //Validate by checking if username exists and token is not expired
                     Authentication authentication = jwtService.validateToken(authElements[1]);
+
+                    //Retrieve the Context from Context Holder and sets the Validated Authentication Token to Authentication object
                     SecurityContextHolder.getContext().setAuthentication(authentication);
 
                 } catch (RuntimeException e) {
+                    //Clear Context
                     SecurityContextHolder.clearContext();
                     throw e;
                 }

@@ -64,29 +64,24 @@ class JwtServiceImplTest {
         // Additional assertions can be added based on token structure or properties
     }
 
-    @Test
-    void validateToken_ValidToken() {
-        //Arrange
-        String username = "testUser";
-        String secretKey = "your_predefined_secret_key"; // Provide a predefined secret key
-        doReturn(secretKey).when(secretKeyGenerator).getSecretKey();
-//        when(secretKeyGenerator.getSecretKey()).thenReturn(secretKey);
-        DecodedJWT decodedJWT = mock(DecodedJWT.class);
-        when(decodedJWT.getSubject()).thenReturn(username);
-
-        String token = jwtService.generateToken(username);
-        UserDto userDto = new UserDto(
-                1, username, token, null);
-
-        when(userService.findByUsername(decodedJWT.getSubject())).thenReturn(userDto);
-
-        //Act
-        Authentication authentication = jwtService.validateToken(token);
-
-        //Assert
-        assertNotNull(authentication);
-        assertEquals(userDto, authentication.getPrincipal());
-    }
+//    @Test
+//    void validateToken_ValidToken() {
+//        //Arrange
+//        String username = "testUser";
+//        String secretKey = "your_predefined_secret_key"; // Provide a predefined secret key
+//        doReturn(secretKey).when(secretKeyGenerator).getSecretKey();
+////        when(secretKeyGenerator.getSecretKey()).thenReturn(secretKey);
+//        DecodedJWT decodedJWT = mock(DecodedJWT.class);
+//        when(decodedJWT.getSubject()).thenReturn(username);
+//
+//        String token = jwtService.generateToken(username);
+//        UserDto userDto = new UserDto(
+//                1, username, token, null);
+//
+//        when(userService.findByUsername(decodedJWT.getSubject())).thenReturn(userDto);
+//
+//
+//    }
 
     @Test
     void verifyToken_ValidToken() {

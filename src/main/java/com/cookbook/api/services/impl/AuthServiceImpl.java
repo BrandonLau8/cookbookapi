@@ -75,9 +75,12 @@ public class AuthServiceImpl implements AuthService {
         //Find Refresh token
         RefreshToken userToken = refreshTokenRepository.findByToken(refreshTokenDto.getToken()).orElseThrow(() -> new RuntimeException("No refresh token"));
 
+        try {
+        //Check if Refresh Token is expired
+        RefreshToken validToken = refreshTokenService.verifyExpiration(userToken);
 
-        //If token found, generate a new Access token
-        String jwt = jwtService.generateToken(userToken.getPerson().getUsername());
+        //If token valid, generate a new Access token
+        String jwt = jwtService.generateToken(validToken.getPerson().getUsername());
 
         //Update refreshToken
         userToken.setExpiryDate(Instant.now().plusMillis(60000));
@@ -89,11 +92,14 @@ public class AuthServiceImpl implements AuthService {
         userDto.setToken(userToken.getToken());
 
         return userDto;
+        } catch (RuntimeException e) {
+            throw new RuntimeException(userToken.getToken() + "There is no Refresh Token. Please make a new signin request");
+        }
     }
 
     @Override
     public UserDto login(LoginDto loginDto) {
-        //Auth with dao
+        //Authentication with Dao
         Authentication authentication = new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword());
         Authentication authenticated = daoAuthProvider.authenticate(authentication);
 
@@ -108,13 +114,13 @@ public class AuthServiceImpl implements AuthService {
                 UserDto userDto = userMappers.detailToDto(userDetails);
                 userDto.setAccessToken(jwt);
 
-
                 //check if there are any existing refresh tokens
                 refreshTokenRepository.findByPersonUsername(userDetails.getUsername()).ifPresentOrElse((existingRefreshToken) -> {
                     existingRefreshToken.setExpiryDate(Instant.now().plusMillis(600000));
                     refreshTokenRepository.save(existingRefreshToken);
                     userDto.setToken(existingRefreshToken.getToken());
                 }, () -> {
+                    //Create a Refresh Token if there is none
                     RefreshToken newRefreshToken = refreshTokenService.createRefeshToken(userDto.getUsername());
                     userDto.setToken(newRefreshToken.getToken());
                 });

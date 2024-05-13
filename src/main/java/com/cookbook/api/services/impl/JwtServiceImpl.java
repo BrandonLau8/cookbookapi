@@ -17,10 +17,12 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -31,8 +33,6 @@ import java.util.function.Function;
 @Data
 @Service
 public class JwtServiceImpl implements JwtService {
-
-//    private final Key SECRET_KEY = Keys.secretKeyFor(io.jsonwebtoken.SignatureAlgorithm.HS256);
 
     private final SecretKeyGenerator secretKeyGenerator;
 
@@ -64,32 +64,43 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public Authentication validateToken(String token) {
 
-        DecodedJWT decodedJWT = verifyToken(token);
+        try {
 
-        String username = decodedJWT.getSubject();
-        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            //Verifies token returning a decoded token
+            DecodedJWT decodedJWT = verifyToken(token);
 
-        return new UsernamePasswordAuthenticationToken(userDetails, null, Collections.emptyList());
+            //Check if the username exists
+            String username = decodedJWT.getSubject();
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+
+            //Check if token is not expired
+            if (decodedJWT.getExpiresAt().before(new Date())) {
+                throw new JWTVerificationException("Token is expired");
+            }
+
+            //Return the authenticated object
+            return new UsernamePasswordAuthenticationToken(userDetails, token, Collections.emptyList());
+
+        } catch (JWTVerificationException e) {
+            //Token Verification failed
+            throw new AuthenticationServiceException("Token verification failed", e);
+        } catch (UsernameNotFoundException e) {
+            //Username not found
+            throw new UsernameNotFoundException("User not found");
+        }
+
     }
 
     DecodedJWT verifyToken(String token) {
+        //encrypt the secret key
         Algorithm algorithm = Algorithm.HMAC256(secretKeyGenerator.getSecretKey());
-        JWTVerifier verifier = JWT.require(algorithm)
-                .build();
+
+        //Uses the encrypted secret key to verify the token
+        JWTVerifier verifier = JWT.require(algorithm).build();
+
+        //Verifies the token with encrypted key returning a decoded token
         return verifier.verify(token);
     }
 
-//    public<T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-//        final Claims claims = extractAllClaims(token);
-//        return claimsResolver.apply(claims);
-//    }
-//
-//    public Claims extractAllClaims(String token) {
-//        return Jwts
-//                .parserBuilder()
-//    }
-//
-//    public String extractUsername(String token) {
-//        return extractClaim(token, Claims::getSubject);
-//    }
 }
