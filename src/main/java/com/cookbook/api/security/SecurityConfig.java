@@ -4,6 +4,7 @@ package com.cookbook.api.security;
 import com.cookbook.api.repository.UserRepository;
 import com.cookbook.api.services.JwtService;
 import com.cookbook.api.services.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -39,20 +40,20 @@ public class SecurityConfig {
     private final DaoAuthProvider daoAuthProvider;
     private final UserDetailsServiceImpl userDetailsService;
     private final AuthEntryPoint authEntryPoint;
+    private final CustomLogoutHandler customLogoutHandler;
 
-    public SecurityConfig(CorsConfigurationSource corsConfigurationSource, PasswordConfig passwordConfig, JwtAuthFilter jwtAuthFilter, DaoAuthProvider daoAuthProvider, UserDetailsServiceImpl userDetailsService, AuthEntryPoint authEntryPoint) {
+    public SecurityConfig(CorsConfigurationSource corsConfigurationSource, PasswordConfig passwordConfig, JwtAuthFilter jwtAuthFilter, DaoAuthProvider daoAuthProvider, UserDetailsServiceImpl userDetailsService, AuthEntryPoint authEntryPoint, CustomLogoutHandler customLogoutHandler) {
         this.corsConfigurationSource = corsConfigurationSource;
         this.passwordConfig = passwordConfig;
         this.jwtAuthFilter = jwtAuthFilter;
         this.daoAuthProvider = daoAuthProvider;
         this.userDetailsService = userDetailsService;
         this.authEntryPoint = authEntryPoint;
+        this.customLogoutHandler = customLogoutHandler;
     }
 
     @Autowired
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService)
-                .passwordEncoder(passwordConfig.passwordEncoder());
         auth.authenticationProvider(daoAuthProvider);
     }
 
@@ -88,11 +89,13 @@ public class SecurityConfig {
                                 .anyRequest().authenticated()
                 )
                 .logout(l->l
-                        .logoutUrl("/logout") // specify the URL for logout
-                        .logoutSuccessUrl("/") // specify the URL to redirect to after logout
+                        .logoutUrl("/api/auth/logout") // specify the URL for logout
+                                .addLogoutHandler(customLogoutHandler)
+                        .logoutSuccessUrl("/api/foods") // specify the URL to redirect to after logout
                         .invalidateHttpSession(true) // invalidate the HttpSession
                         .deleteCookies("JSESSIONID") // delete cookies (if any)
                         .permitAll() // allow all users to access the logout URL
+
                 );
 
 

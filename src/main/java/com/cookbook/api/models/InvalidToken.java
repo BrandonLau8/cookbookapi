@@ -8,26 +8,28 @@ import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 
-@Data
 @Entity
-@NoArgsConstructor
+@Data
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
-@Table(name = "refreshToken")
-public class RefreshToken {
+@Table(name = "invalidtoken")
+public class InvalidToken {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     private String token;
 
-    private Instant expiryDate;
+    private Boolean validity;
 
-    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(
-            name = "person_refreshToken",
-            joinColumns= @JoinColumn(name="refreshToken_id", referencedColumnName="id"),
+            name = "person_invalidtoken",
+            joinColumns= @JoinColumn(name="invalidtoken_id", referencedColumnName="id"),
             inverseJoinColumns= @JoinColumn(name="person_id", referencedColumnName="id")
     )
     private UserEntity person;
+
 }

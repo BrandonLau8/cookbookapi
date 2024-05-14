@@ -11,7 +11,6 @@ import com.cookbook.api.models.UserEntity;
 import com.cookbook.api.repository.RefreshTokenRepository;
 import com.cookbook.api.repository.RoleRepository;
 import com.cookbook.api.repository.UserRepository;
-import com.cookbook.api.security.AuthEntryPoint;
 import com.cookbook.api.security.DaoAuthProvider;
 import com.cookbook.api.security.PasswordConfig;
 import com.cookbook.api.security.UserDetailsServiceImpl;
@@ -19,10 +18,10 @@ import com.cookbook.api.services.AuthService;
 import com.cookbook.api.services.JwtService;
 import com.cookbook.api.services.RefreshTokenService;
 import com.cookbook.api.services.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -71,6 +70,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    public void logout(HttpServletRequest request) {
+        jwtService.invalidateToken(request);
+    }
+
+    @Override
     public UserDto refreshLogin(RefreshTokenDto refreshTokenDto) {
         //Find Refresh token
         RefreshToken userToken = refreshTokenRepository.findByToken(refreshTokenDto.getToken()).orElseThrow(() -> new RuntimeException("No refresh token"));
@@ -104,10 +108,10 @@ public class AuthServiceImpl implements AuthService {
         Authentication authenticated = daoAuthProvider.authenticate(authentication);
 
         if (authenticated.isAuthenticated()) {
-            // If authentication is successful, generate a access token and refresh token using username from principal
+            // If authentication is successful,
             if (authenticated.getPrincipal() instanceof UserDetails) {
+                //generate a access token and refresh token using username from principal
                 UserDetails userDetails = (UserDetails) authenticated.getPrincipal();
-
                 String jwt = jwtService.generateToken(userDetails.getUsername());
 
                 //Put token into userdto

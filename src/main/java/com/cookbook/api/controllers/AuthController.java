@@ -1,10 +1,7 @@
 package com.cookbook.api.controllers;
 
 
-import com.cookbook.api.dto.LoginDto;
-import com.cookbook.api.dto.RefreshTokenDto;
-import com.cookbook.api.dto.RegisterDto;
-import com.cookbook.api.dto.UserDto;
+import com.cookbook.api.dto.*;
 
 import com.cookbook.api.models.UserEntity;
 import com.cookbook.api.repository.UserRepository;
@@ -65,6 +62,11 @@ public class AuthController {
         return "hello";
     }
 
+//    @GetMapping("/logout")
+//    public String logout(HttpServletRequest request) {
+//        authService.logout(request);
+//        return ("User logged out");
+//    }
 }
 
 
