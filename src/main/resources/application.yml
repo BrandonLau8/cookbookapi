@@ -1,0 +1,35 @@
+#set up settings for database
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/cookbookapi
+    username: postgres
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop # JPA will automatically create all tables for you if updated
+    show-sql: true # See SQL commands in terminal
+    properties:
+      hibernate:
+        format_sql: true
+  cors:
+    allowed-origins:
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: "36697686716-42qfnhvgccjatv483ljuu84pl4s7smoq.apps.googleusercontent.com"
+            client-secret: "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"
+            redirect-uri: "http://localhost:8080/login/oauth2/code/google"
+#          cognito:
+#            clientId: 36697686716-42qfnhvgccjatv483ljuu84pl4s7smoq.apps.googleusercontent.com
+#            clientSecret: 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
+#            scope: openid
+#            redirect-uri: http://localhost:8080/api/auth/login
+#            clientName: clientName
+#        provider:
+#          cognito:
+#            issuerUri: https://cognito-idp.{region}.amazonaws.com/{poolId}
+#            user-name-attribute: cognito:username
