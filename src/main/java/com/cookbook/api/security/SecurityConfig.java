@@ -25,7 +25,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.server.authentication.logout.DelegatingServerLogoutHandler;
 import org.springframework.security.web.server.authentication.logout.SecurityContextServerLogoutHandler;
 import org.springframework.security.web.server.authentication.logout.WebSessionServerLogoutHandler;
@@ -60,6 +62,7 @@ public class SecurityConfig {
     }
 
 
+
     @Bean //manage the lifecycle of the bean.
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
@@ -75,33 +78,35 @@ public class SecurityConfig {
 
 //                //protect against cross site forgery using both sync token pattern or same site attribute.
 //                //during dev, disabling helps
-                .csrf(csrf -> csrf.disable())
+                .csrf(c -> c.disable()
+//                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+
+                )
 
 //                .cors((cors) -> cors
 //                        .configurationSource(corsConfigurationSource))
 
                 //stateless means you do not wish to keep sessions on server. all requests from client require necessary info like tokens, etc...
-                .sessionManagement(sessionManagement ->
-                        sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//                .sessionManagement(sessionManagement ->
+//                        sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 //usernamepassword authen filter
                 .authorizeHttpRequests(requests -> requests
 //                        //learn about mvcMatchers as well
                                 .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register", "/api/auth/refreshlogin").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/foods").permitAll()
-                                .requestMatchers("/login/oauth2/code/google").permitAll()
+                                .requestMatchers("/", "/error", "/webjars/**").permitAll()
                                 //any endpoint in your app requires that the security context at minimum be authen in order to allow it
                                 .anyRequest().authenticated()
                 )
-                .oauth2Login(withDefaults());
-//                .logout(l->l
-//                        .logoutUrl("/api/auth/logout") // specify the URL for logout
-//                                .addLogoutHandler(customLogoutHandler)
-//                        .logoutSuccessUrl("/api/foods") // specify the URL to redirect to after logout
+                .oauth2Login(withDefaults())
+                .logout(l->l
+//                      .addLogoutHandler(customLogoutHandler)
+                        .logoutSuccessUrl("/") // specify the URL to redirect to after logout
 //                        .invalidateHttpSession(true) // invalidate the HttpSession
-//                        .deleteCookies("JSESSIONID") // delete cookies (if any)
-//                        .permitAll()
-//                );
+                        .deleteCookies("JSESSIONID") // delete cookies (if any)
+                        .permitAll()
+                );
 
 
 
