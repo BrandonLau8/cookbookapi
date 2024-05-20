@@ -93,7 +93,7 @@ public class SecurityConfig {
                 //usernamepassword authen filter
                 .authorizeHttpRequests(requests -> requests
 //                        //learn about mvcMatchers as well
-                                .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register", "/api/auth/refreshlogin").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/login", "/register", "/refreshlogin").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/foods").permitAll()
                                 .requestMatchers("/", "/error", "/webjars/**").permitAll()
                                 //any endpoint in your app requires that the security context at minimum be authen in order to allow it

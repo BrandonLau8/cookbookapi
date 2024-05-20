@@ -29,20 +29,15 @@
             $(".authenticated").hide();
         });
 
-        var logout = function() {
-            // AWS Cognito logout URL
-            var cognitoLogoutUrl = "https://testcogsb1.auth.us-east-2.amazoncognito.com/logout?client_id=20e6bvh9pjqsfd1i98l2m9lapl&logout_uri=http://localhost:8080/logout";
 
-            // Clear local cookies or session storage if any
-            Cookies.remove('XSRF-TOKEN');
-            // Remove other relevant cookies or session storage items
-            // Cookies.remove('YOUR_OTHER_COOKIES');
-
-            // Redirect to AWS Cognito logout URL
-            window.location.href = cognitoLogoutUrl;
-        };
-
-        $("#logoutButton").click(logout);
+       $.get("/api/config", function(data) {
+            var logoutUrl = data.logoutUrl;
+            var logout = function() {
+            Cookies.remove("XSRF-TOKEN");
+            window.location.href = logoutUrl;
+            };
+            $("#logoutButton").click(logout);
+            });
     });
 
         </script>
