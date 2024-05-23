@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 
 @Component
-@ComponentScan
 public class UserDetailsServiceImpl implements UserDetailsService {
 
     private final UserRepository userRepository;

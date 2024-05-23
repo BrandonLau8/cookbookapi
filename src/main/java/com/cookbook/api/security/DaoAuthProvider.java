@@ -39,6 +39,7 @@ public class DaoAuthProvider implements AuthenticationProvider {
         this.jwtService = jwtService;
     }
 
+    //Auth Provider checks if the username and password are correct
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         //Get Input Username from unauthenticated Object (loginDto)

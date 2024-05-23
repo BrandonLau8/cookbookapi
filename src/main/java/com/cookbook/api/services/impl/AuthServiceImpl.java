@@ -112,24 +112,25 @@ public class AuthServiceImpl implements AuthService {
             if (authenticated.getPrincipal() instanceof UserDetails) {
                 //generate a access token and refresh token using username from principal
                 UserDetails userDetails = (UserDetails) authenticated.getPrincipal();
-                String jwt = jwtService.generateToken(userDetails.getUsername());
+//                String jwt = jwtService.generateToken(userDetails.getUsername());
 
-                //Put token into userdto
-                UserDto userDto = userMappers.detailToDto(userDetails);
-                userDto.setAccessToken(jwt);
+//                //Put token into userdto for dev
+//                UserDto userDto = userMappers.detailToDto(userDetails);
+//                userDto.setAccessToken(jwt);
 
-                //check if there are any existing refresh tokens
-                refreshTokenRepository.findByPersonUsername(userDetails.getUsername()).ifPresentOrElse((existingRefreshToken) -> {
-                    existingRefreshToken.setExpiryDate(Instant.now().plusMillis(600000));
-                    refreshTokenRepository.save(existingRefreshToken);
-                    userDto.setToken(existingRefreshToken.getToken());
-                }, () -> {
-                    //Create a Refresh Token if there is none
-                    RefreshToken newRefreshToken = refreshTokenService.createRefeshToken(userDto.getUsername());
-                    userDto.setToken(newRefreshToken.getToken());
-                });
 
-                return userDto;
+//                //check if there are any existing refresh tokens
+//                refreshTokenRepository.findByPersonUsername(userDetails.getUsername()).ifPresentOrElse((existingRefreshToken) -> {
+//                    existingRefreshToken.setExpiryDate(Instant.now().plusMillis(600000));
+//                    refreshTokenRepository.save(existingRefreshToken);
+//                    userDto.setToken(existingRefreshToken.getToken());
+//                }, () -> {
+//                    //Create a Refresh Token if there is none
+//                    RefreshToken newRefreshToken = refreshTokenService.createRefeshToken(userDto.getUsername());
+//                    userDto.setToken(newRefreshToken.getToken());
+//                });
+
+                return userMappers.detailToDto(userDetails);
             } else {
                 throw new BadCredentialsException("User principal is not of type UserDetails");
             }

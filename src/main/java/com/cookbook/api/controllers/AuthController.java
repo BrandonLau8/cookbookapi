@@ -5,7 +5,6 @@ import com.cookbook.api.dto.*;
 
 import com.cookbook.api.models.UserEntity;
 import com.cookbook.api.repository.UserRepository;
-import com.cookbook.api.security.AwsCognitoConfig;
 import com.cookbook.api.services.AuthService;
 import com.cookbook.api.services.JwtService;
 import com.cookbook.api.services.UserService;
@@ -25,6 +24,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
 
 @RestController
@@ -33,13 +34,12 @@ public class AuthController {
     private final AuthService authService;
     private final UserDetailsService userDetailsService;
 
-    private final AwsCognitoConfig awsCognitoConfig;
 
     @Autowired
-    public AuthController(AuthService authService, UserDetailsService userDetailsService, AwsCognitoConfig awsCognitoConfig) {
+    public AuthController(AuthService authService, UserDetailsService userDetailsService) {
         this.authService = authService;
         this.userDetailsService = userDetailsService;
-        this.awsCognitoConfig = awsCognitoConfig;
+
     }
 
     @PostMapping("/register")
@@ -61,19 +61,10 @@ public class AuthController {
         return new ResponseEntity<>(refreshUser, HttpStatus.OK);
     }
 
-    @GetMapping("/test")
-    public String test() {
-        return "hello";
-    }
-
-    @GetMapping("/logout")
-    public void logout(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        //Clear local cookies or session storage if any
-        request.getSession().invalidate();
-
-        //Redirect to AWS Cognito logout URL
-        response.sendRedirect(awsCognitoConfig.getLogoutUrl());
-
+    @PostMapping("/logout")
+    public String logout(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        authService.logout(request);
+        return ("Logout successful");
     }
 }
 

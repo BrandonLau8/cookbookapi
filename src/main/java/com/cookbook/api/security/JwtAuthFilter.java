@@ -50,7 +50,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         this.invalidTokenRepository = invalidTokenRepository;
     }
 
-    //Filter intercepts incoming requests
+    //Filter intercepts incoming requests checking for a token
     @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
