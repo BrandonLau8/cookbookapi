@@ -51,15 +51,13 @@ public class SecurityConfig {
     private final AuthEntryPoint authEntryPoint;
     private final CustomLogoutHandler customLogoutHandler;
 
-    private final JwtRequestFilter jwtRequestFilter;
 
-    public SecurityConfig(CorsConfigurationSource corsConfigurationSource, JwtAuthFilter jwtAuthFilter, DaoAuthProvider daoAuthProvider, AuthEntryPoint authEntryPoint, CustomLogoutHandler customLogoutHandler, JwtRequestFilter jwtRequestFilter) {
+    public SecurityConfig(CorsConfigurationSource corsConfigurationSource, JwtAuthFilter jwtAuthFilter, DaoAuthProvider daoAuthProvider, AuthEntryPoint authEntryPoint, CustomLogoutHandler customLogoutHandler) {
         this.corsConfigurationSource = corsConfigurationSource;
         this.jwtAuthFilter = jwtAuthFilter;
         this.daoAuthProvider = daoAuthProvider;
         this.authEntryPoint = authEntryPoint;
         this.customLogoutHandler = customLogoutHandler;
-        this.jwtRequestFilter = jwtRequestFilter;
     }
 
     @Autowired
@@ -83,7 +81,7 @@ public class SecurityConfig {
 //                .addFilterBefore(jwtAuthFilter, BasicAuthenticationFilter.class)
 
                 //JWT Request Filter
-                .addFilterAfter(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
+//                .addFilterAfter(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
 
 //                //protect against cross site forgery using both sync token pattern or same site attribute.
 //                //during dev, disabling helps

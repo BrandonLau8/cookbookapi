@@ -62,7 +62,7 @@ public class DaoAuthProvider implements AuthenticationProvider {
 
             //Create authenticated token and set into SecurityContext
             Authentication authenticated = new UsernamePasswordAuthenticationToken(userDetails, inputPassword, null);
-            SecurityContextHolder.getContext().setAuthentication(authenticated);
+//            SecurityContextHolder.getContext().setAuthentication(authenticated);
             return authenticated;
         } else {
             throw new AuthenticationException("Invalid credentials") {}; // You can customize the exception message here

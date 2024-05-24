@@ -34,12 +34,15 @@ public class AuthController {
     private final AuthService authService;
     private final UserDetailsService userDetailsService;
 
+    private final JwtService jwtService;
+
 
     @Autowired
-    public AuthController(AuthService authService, UserDetailsService userDetailsService) {
+    public AuthController(AuthService authService, UserDetailsService userDetailsService, JwtService jwtService) {
         this.authService = authService;
         this.userDetailsService = userDetailsService;
 
+        this.jwtService = jwtService;
     }
 
     @PostMapping("/register")
@@ -52,6 +55,9 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<UserDto> login(@RequestBody LoginDto loginDto, HttpServletResponse response, HttpServletRequest request) {
         UserDto loggingUser = authService.login(loginDto);
+        String accessToken = jwtService.generateToken(loggingUser.getUsername());
+        response.setHeader("Authorization", "Bearer " + accessToken);
+        System.out.println(response.getHeader("Authorization"));
         return new ResponseEntity<>(loggingUser, HttpStatus.OK);
     }
 
