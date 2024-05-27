@@ -2,23 +2,22 @@ package com.cookbook.api.services.impl;
 
 
 import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 
 import com.cookbook.api.models.InvalidToken;
+import com.cookbook.api.models.RefreshToken;
 import com.cookbook.api.models.UserEntity;
 import com.cookbook.api.repository.InvalidTokenRepository;
+import com.cookbook.api.repository.RefreshTokenRepository;
 import com.cookbook.api.repository.UserRepository;
 import com.cookbook.api.security.SecretKeyGenerator;
 import com.cookbook.api.services.JwtService;
 import com.cookbook.api.services.UserService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.transaction.Transactional;
+import com.cookbook.api.utils.JwtUtil;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -26,10 +25,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 
 
 @Data
@@ -46,19 +48,25 @@ public class JwtServiceImpl implements JwtService {
 
     private final UserRepository userRepository;
 
+    private final JwtUtil jwtUtil;
+
+    private final RefreshTokenRepository refreshTokenRepository;
+
     @Autowired
-    public JwtServiceImpl(SecretKeyGenerator secretKeyGenerator, UserService userService, UserDetailsService userDetailsService, InvalidTokenRepository invalidTokenRepository, UserRepository userRepository) {
+    public JwtServiceImpl(SecretKeyGenerator secretKeyGenerator, UserService userService, UserDetailsService userDetailsService, InvalidTokenRepository invalidTokenRepository, UserRepository userRepository, JwtUtil jwtUtil, RefreshTokenRepository refreshTokenRepository) {
         this.secretKeyGenerator = secretKeyGenerator;
         this.userService = userService;
         this.userDetailsService = userDetailsService;
         this.invalidTokenRepository = invalidTokenRepository;
         this.userRepository = userRepository;
+        this.jwtUtil = jwtUtil;
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
     @Override
-    public String generateToken(String username) {
+    public String createAccessToken(String username) {
         Date now = new Date();
-        Date validTil = new Date(now.getTime() * 3600000); //1hr
+        Date validTil = new Date(now.getTime() * 3600000);
 
         Algorithm algorithm = Algorithm.HMAC256(secretKeyGenerator.getSecretKey());
 
@@ -70,11 +78,23 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
+    public RefreshToken createRefeshToken(String username) {
+
+        RefreshToken refreshToken = RefreshToken.builder()
+                .person(userRepository.findByUsername(username)
+                        .orElseThrow(() -> new UsernameNotFoundException("Username not found")))
+                .token(UUID.randomUUID().toString())
+                .expiryDate(Instant.now().plusMillis(600000)) //10mins
+                .build();
+        return refreshTokenRepository.save(refreshToken);
+    }
+
+    @Override
     public Authentication validateToken(String token) {
 
         try {
             //Verifies token returning a decoded token
-            DecodedJWT decodedJWT = verifyToken(token);
+            DecodedJWT decodedJWT = jwtUtil.verifyToken(token);
 
             //Check if the username exists
             String username = decodedJWT.getSubject();
@@ -103,18 +123,28 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
-    @Transactional
-    public void invalidateToken(HttpServletRequest request) {
-        //Get token from request header
-        String token = extractTokenFromHeader(request);
+    public RefreshToken verifyExpiration(String token) {
+        RefreshToken refreshToken = refreshTokenRepository.findByToken(token)
+                .orElseThrow(()->new RuntimeException("RefreshToken not found"));
+        if(refreshToken.getExpiryDate().compareTo(Instant.now()) < 0) {
+            refreshTokenRepository.delete(refreshToken);
+            throw new RuntimeException(refreshToken.getToken() + "Refresh token expired. Please make a new signin request");
+        }
+        return refreshToken;
+    }
+
+    @Override
+    public void invalidateToken(String token) {
 
         //Verify token returning a decoded token
-        DecodedJWT decodedJWT = verifyToken(token);
+        DecodedJWT decodedJWT = jwtUtil.verifyToken(token);
 
         //Find user from decoded token
         UserDetails userDetails = userDetailsService.loadUserByUsername(decodedJWT.getSubject());
         UserEntity userEntity = userRepository.findByUsername(userDetails.getUsername())
-                .orElseThrow(()->{throw new UsernameNotFoundException("Username not found");});
+                .orElseThrow(() -> {
+                    throw new UsernameNotFoundException("Username not found");
+                });
 
         // Check if the token exists in the blacklist
         Optional<InvalidToken> invalidTokenOptional = invalidTokenRepository.findByToken(token);
@@ -122,6 +152,12 @@ public class JwtServiceImpl implements JwtService {
             throw new AuthenticationServiceException("Token is already invalid");
         }
 
+        // Find the refresh token by its token value
+        Optional<RefreshToken> refreshTokenOptional = refreshTokenRepository.findByToken(token);
+        //Delete token from Refresh Token DAO
+       if(refreshTokenOptional.isPresent()) {
+           refreshTokenRepository.delete(refreshTokenOptional.get());
+       }
 
         //Create invalid token
         InvalidToken invalidToken = new InvalidToken().builder()
@@ -133,31 +169,9 @@ public class JwtServiceImpl implements JwtService {
         //Save invalidToken
         invalidTokenRepository.save(invalidToken);
     }
+}
 
-    DecodedJWT verifyToken(String token) {
-        //encrypt the secret key
-        Algorithm algorithm = Algorithm.HMAC256(secretKeyGenerator.getSecretKey());
 
-        //Uses the encrypted secret key to verify the token
-        JWTVerifier verifier = JWT.require(algorithm).build();
 
-        //Verifies the token with encrypted key returning a decoded token
-        return verifier.verify(token);
-    }
 
-    String extractTokenFromHeader(HttpServletRequest request) {
-        //Get the Request Authorization Header
-        String header = request.getHeader(HttpHeaders.AUTHORIZATION);
 
-        //Split Bearer from token from Authorization Header
-        if (header != null) {
-            String[] authElements = header.split(" ");
-
-            //Check if Header was properly split
-            if (authElements.length == 2 && "Bearer".equals(authElements[0])) {
-                return authElements[1];
-            }
-        }
-        throw new RuntimeException("Invalid or missing Request Header");
-        }
-    }

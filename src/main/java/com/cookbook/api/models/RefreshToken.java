@@ -19,15 +19,12 @@ public class RefreshToken {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(unique = true)
     private String token;
 
     private Instant expiryDate;
 
-    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinTable(
-            name = "person_refreshToken",
-            joinColumns= @JoinColumn(name="refreshToken_id", referencedColumnName="id"),
-            inverseJoinColumns= @JoinColumn(name="person_id", referencedColumnName="id")
-    )
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "person_id", referencedColumnName = "id")
     private UserEntity person;
 }

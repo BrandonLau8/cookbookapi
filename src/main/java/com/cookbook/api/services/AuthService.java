@@ -10,10 +10,6 @@ import org.springframework.security.core.Authentication;
 public interface AuthService {
     public UserDto login(LoginDto loginDto);
 
-    void logout(HttpServletRequest request);
-
-    UserDto refreshLogin (RefreshTokenDto refreshTokenDto);
-
     public UserDto register(RegisterDto registerDto);
 
 

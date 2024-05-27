@@ -107,10 +107,9 @@ public class SecurityConfig {
                                 .anyRequest().authenticated()
                 )
                 .logout(l->l
-                      .addLogoutHandler(customLogoutHandler)
-                        .logoutSuccessUrl("/") // specify the URL to redirect to after logout
-//                        .invalidateHttpSession(true) // invalidate the HttpSession
-                        .deleteCookies("JSESSIONID") // delete cookies (if any)
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/")
+                        .deleteCookies("JSESSIONID", "Authorization", "Refresh")
                         .permitAll()
                 );
 
