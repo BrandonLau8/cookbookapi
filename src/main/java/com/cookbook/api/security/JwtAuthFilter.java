@@ -12,6 +12,7 @@ import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Data;
@@ -26,11 +27,14 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 @Data
@@ -57,38 +61,28 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-        //Get the Request Authorization Header
-        String header = request.getHeader(HttpHeaders.AUTHORIZATION);
+        //Get the Authorization cookie
+        Cookie[] cookies = request.getCookies();
 
-        //Split Bearer from token from Authorization Header
-        if (header != null) {
-            String[] authElements = header.split(" ");
-
-            //Check if Header was properly split
-            if (authElements.length == 2 && "Bearer".equals(authElements[0])) {
-                try {
-
-                    String token = authElements[1];
-
-                    // Check if token is invalidated. Stop filter if it is.
-                    if (invalidTokenRepository.findByToken(token).isPresent()) {
-                        return;
-                    }
+        try {
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("Authorization".equals(cookie.getName())) {
+                    String decodedToken = URLDecoder.decode(cookie.getValue(), StandardCharsets.UTF_8);
 
                     //Validate by checking if username exists and token is not expired
-                    Authentication authentication = jwtService.validateToken(authElements[1]);
-
+                    Authentication authentication = jwtService.validateToken(decodedToken);
 
                     //Retrieve the Context from Context Holder and sets the Validated Authentication Token to Authentication object
                     SecurityContextHolder.getContext().setAuthentication(authentication);
-
-                } catch (RuntimeException e) {
+                }
+            }
+        }
+                } catch (JwtException e) {
                     //Clear Context
                     SecurityContextHolder.clearContext();
                     throw e;
                 }
-            }
-        }
 
         filterChain.doFilter(request, response);
     }

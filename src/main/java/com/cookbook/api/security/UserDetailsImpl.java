@@ -23,8 +23,6 @@ import java.util.stream.Collectors;
 public class UserDetailsImpl implements UserDetails {
     private final String username;
     private final String password;
-
-
 //    private final Set<GrantedAuthority> roles;
 
     @Autowired

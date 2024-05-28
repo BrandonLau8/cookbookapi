@@ -58,7 +58,7 @@ public class DaoAuthProvider implements AuthenticationProvider {
 //                .collect(Collectors.toSet());
 
         //Check if Passwords match each other by encoding inputPassword and comparing
-        if (passwordEncoder.matches(inputPassword, encodedPassword)) {
+        if (passwordEncoder.matches(inputPassword,  encodedPassword)) {
 
             //Create authenticated token and set into SecurityContext
             Authentication authenticated = new UsernamePasswordAuthenticationToken(userDetails, inputPassword, null);

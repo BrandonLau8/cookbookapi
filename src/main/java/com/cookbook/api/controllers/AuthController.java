@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -47,7 +48,6 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<UserDto> register(@RequestBody RegisterDto registerDto) {
         UserDto createdUser = authService.register(registerDto);
-//        return ResponseEntity.created(URI.create("/users/" + createdUser.getId())).body(createdUser);
         return new ResponseEntity<>(createdUser, HttpStatus.OK);
     }
 
@@ -60,8 +60,8 @@ public class AuthController {
         String encodeAccessToken = URLEncoder.encode(accessToken, StandardCharsets.UTF_8);
 
         Cookie accessCookie = new Cookie("Authorization", encodeAccessToken);
-        accessCookie.setHttpOnly(false);
-        accessCookie.setSecure(false); //Ensure set true in prod
+        accessCookie.setHttpOnly(true);
+        accessCookie.setSecure(true); //Ensure set true in prod
         accessCookie.setPath("/");
         accessCookie.setMaxAge(3600);
         response.addCookie(accessCookie);
@@ -72,8 +72,8 @@ public class AuthController {
 
         //Store into cookie
         Cookie refreshCookie = new Cookie("Refresh", encodeRefreshToken);
-        refreshCookie.setHttpOnly(false);
-        refreshCookie.setSecure(false); //Ensure set true in prod
+        refreshCookie.setHttpOnly(true);
+        refreshCookie.setSecure(true); //Ensure set true in prod
         refreshCookie.setPath("/");
         refreshCookie.setMaxAge(3600);
         response.addCookie(refreshCookie);
@@ -126,6 +126,10 @@ public class AuthController {
     public String logoutGet() {
         return ("Logout successful");
     }
+
+    @GetMapping("/test")
+    public String test() {return ("Test");}
+
 }
 
 
