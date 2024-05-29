@@ -5,6 +5,7 @@ import com.cookbook.api.dto.RefreshTokenDto;
 import com.cookbook.api.dto.RegisterDto;
 import com.cookbook.api.dto.UserDto;
 import com.cookbook.api.exceptions.LoginException;
+import com.cookbook.api.exceptions.RegistrationException;
 import com.cookbook.api.mappers.UserMappers;
 import com.cookbook.api.models.RefreshToken;
 import com.cookbook.api.models.RoleEntity;
@@ -33,6 +34,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -102,22 +104,21 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public UserDto register(RegisterDto registerDto) {
-        userRepository.findByUsername(registerDto.getUsername()).ifPresent((userEntity) -> {
-            throw new LoginException("User already exists", HttpStatus.BAD_REQUEST);
-        });
 
-        UserEntity userEntity = userMappers.maptoEntity(registerDto);
+        if(userRepository.findByUsername(registerDto.getUsername()).isEmpty()) {
+            UserEntity userEntity = userMappers.maptoEntity(registerDto);
 
-        Set<RoleEntity> roles = new HashSet<>();
-        RoleEntity userRole = roleRepository.findByName(RoleType.USER)
-                        .orElseThrow(()-> new RuntimeException("Error: Role is not found"));
-        roles.add(userRole);
+            Set<RoleEntity> roles = new HashSet<>();
+            List<RoleEntity> userRole = roleRepository.findByName(RoleType.USER);
 
-        userEntity.setRoles(roles);
+            userEntity.setRoles(roles);
 
-        userRepository.save(userEntity);
+            userRepository.save(userEntity);
 
-        return userMappers.maptoDto(userEntity);
+            return userMappers.maptoDto(userEntity);
+        } else {
+            throw new RegistrationException("User already exists", HttpStatus.BAD_REQUEST);
+        }
     }
 
 }

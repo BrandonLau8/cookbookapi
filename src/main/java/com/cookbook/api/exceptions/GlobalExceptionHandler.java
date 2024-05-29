@@ -19,6 +19,14 @@ public class GlobalExceptionHandler {
         errorDto.setStatus(HttpStatus.NOT_FOUND);
         return new ResponseEntity<>(errorDto, HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler(RegistrationException.class)
+    public ResponseEntity<ErrorDto> handleRegisterException(LoginException ex) {
+        ErrorDto errorDto = new ErrorDto();
+        errorDto.setMessage("Register error");
+        errorDto.setStatus(HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(errorDto, HttpStatus.BAD_REQUEST);
+    }
 //
 //    @ExceptionHandler(FoodNotFoundException.class) //when a foodnotfoundexception occurs in controllers, this method will be invoked
 //    //webrequests typically used in spring mvc controllers to handle incoming http requests

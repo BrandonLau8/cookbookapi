@@ -102,8 +102,8 @@ public class SecurityConfig {
 
 
                 //stateless means you do not wish to keep sessions on server. all requests from client require necessary info like tokens, etc...
-//                .sessionManagement(sessionManagement ->
-//                        sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(sessionManagement ->
+                        sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 //usernamepassword authen filter
                 .authorizeHttpRequests(requests -> requests
