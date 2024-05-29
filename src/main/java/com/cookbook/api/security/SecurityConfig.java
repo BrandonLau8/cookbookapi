@@ -95,9 +95,10 @@ public class SecurityConfig {
                 .csrf((csrf) -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
+//                                .disable()
                 )
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
-//                .csrf((c)->c.disable())
+
 
 
                 //stateless means you do not wish to keep sessions on server. all requests from client require necessary info like tokens, etc...
@@ -117,7 +118,7 @@ public class SecurityConfig {
                 .logout(l -> l
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/")
-                        .deleteCookies("JSESSIONID", "Authorization", "Refresh")
+                        .deleteCookies("JSESSIONID", "Authorization", "Refresh", "XSRF-TOKEN")
                         .permitAll()
                 );
 

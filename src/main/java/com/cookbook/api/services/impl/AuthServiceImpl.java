@@ -7,6 +7,8 @@ import com.cookbook.api.dto.UserDto;
 import com.cookbook.api.exceptions.LoginException;
 import com.cookbook.api.mappers.UserMappers;
 import com.cookbook.api.models.RefreshToken;
+import com.cookbook.api.models.RoleEntity;
+import com.cookbook.api.models.RoleType;
 import com.cookbook.api.models.UserEntity;
 import com.cookbook.api.repository.RefreshTokenRepository;
 import com.cookbook.api.repository.RoleRepository;
@@ -25,10 +27,14 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Data
 @Service
@@ -76,8 +82,14 @@ public class AuthServiceImpl implements AuthService {
             if (authenticated.getPrincipal() instanceof UserDetails) {
                 //generate a access token and refresh token using username from principal
                 UserDetails userDetails = (UserDetails) authenticated.getPrincipal();
-
-                return userMappers.detailToDto(userDetails);
+                Set<RoleEntity> roles = authenticated.getAuthorities().stream()
+                                .map(authority -> {
+                                        RoleEntity roleEntity = new RoleEntity();
+                                        roleEntity.setName(RoleType.valueOf(authority.getAuthority()));
+                                        return roleEntity;
+                                })
+                        .collect(Collectors.toSet());
+                return userMappers.detailToDto(userDetails, roles);
             } else {
                 throw new BadCredentialsException("User principal is not of type UserDetails");
             }
@@ -95,6 +107,14 @@ public class AuthServiceImpl implements AuthService {
         });
 
         UserEntity userEntity = userMappers.maptoEntity(registerDto);
+
+        Set<RoleEntity> roles = new HashSet<>();
+        RoleEntity userRole = roleRepository.findByName(RoleType.USER)
+                        .orElseThrow(()-> new RuntimeException("Error: Role is not found"));
+        roles.add(userRole);
+
+        userEntity.setRoles(roles);
+
         userRepository.save(userEntity);
 
         return userMappers.maptoDto(userEntity);

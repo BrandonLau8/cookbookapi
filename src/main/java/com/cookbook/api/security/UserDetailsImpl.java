@@ -23,24 +23,22 @@ import java.util.stream.Collectors;
 public class UserDetailsImpl implements UserDetails {
     private final String username;
     private final String password;
-//    private final Set<GrantedAuthority> roles;
+    private final Set<GrantedAuthority> roles;
 
     @Autowired
     public UserDetailsImpl(UserEntity userEntity) {
         this.username = userEntity.getUsername();
         this.password = userEntity.getPassword();
-//        assert userEntity.getRoles() != null;
-//        this.roles = userEntity.getRoles().stream()
-//                .map((RoleEntity role) -> new SimpleGrantedAuthority(role.getName().name()))
-//                .collect(Collectors.toSet());
+        // roleStream contains: RoleEntity("ROLE_USER"), RoleEntity("ROLE_ADMIN")
+        // authorityStream contains: SimpleGrantedAuthority("ROLE_USER"), SimpleGrantedAuthority("ROLE_ADMIN")
+        this.roles = userEntity.getRoles().stream()
+                .map((role) -> new SimpleGrantedAuthority(role.getName().name()))
+                .collect(Collectors.toSet());
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
-//        return roles.stream()
-//                .map(role -> new SimpleGrantedAuthority(role.getAuthority()))
-//                .collect(Collectors.toSet());
+        return roles;
     }
 
     @Override

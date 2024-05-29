@@ -53,16 +53,19 @@ public class DaoAuthProvider implements AuthenticationProvider {
 
         //Get Encoded Password from UserDetails (Database)
         String encodedPassword = userDetails.getPassword();
-//        Set<GrantedAuthority> roles = authentication.getAuthorities().stream()
-//                .map(role -> new SimpleGrantedAuthority(role.getAuthority()))
-//                .collect(Collectors.toSet());
+
+        //Get Role from UserDetails
+        Set<GrantedAuthority> roles = userDetails.getAuthorities().stream()
+                .map(role -> new SimpleGrantedAuthority(role.getAuthority()))
+                .collect(Collectors.toSet());
 
         //Check if Passwords match each other by encoding inputPassword and comparing
-        if (passwordEncoder.matches(inputPassword,  encodedPassword)) {
+        if (passwordEncoder.matches(inputPassword, encodedPassword)) {
+
 
             //Create authenticated token and set into SecurityContext
-            Authentication authenticated = new UsernamePasswordAuthenticationToken(userDetails, inputPassword, null);
-//            SecurityContextHolder.getContext().setAuthentication(authenticated);
+            Authentication authenticated = new UsernamePasswordAuthenticationToken(userDetails, inputPassword, roles);
+            SecurityContextHolder.getContext().setAuthentication(authenticated);
             return authenticated;
         } else {
             throw new AuthenticationException("Invalid credentials") {}; // You can customize the exception message here

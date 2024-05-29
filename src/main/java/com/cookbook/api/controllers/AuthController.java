@@ -95,8 +95,8 @@ public class AuthController {
             String encodedAccessToken = URLEncoder.encode(newAccessToken, StandardCharsets.UTF_8);
 
             Cookie newAccessTokenCookie = new Cookie("Authorization", encodedAccessToken);
-            newAccessTokenCookie.setHttpOnly(false);
-            newAccessTokenCookie.setSecure(false); // Ensure set to true in prod
+            newAccessTokenCookie.setHttpOnly(true);
+            newAccessTokenCookie.setSecure(true); // Ensure set to true in prod
             newAccessTokenCookie.setPath("/");
             newAccessTokenCookie.setMaxAge(3600); // 1 hour expiration
             response.addCookie(newAccessTokenCookie);

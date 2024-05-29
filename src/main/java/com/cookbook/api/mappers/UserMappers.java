@@ -10,8 +10,12 @@ import com.cookbook.api.security.PasswordConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 public class UserMappers {
@@ -32,9 +36,10 @@ public class UserMappers {
         return userDto;
     }
 
-    public UserDto detailToDto(UserDetails userDetails) {
+    public UserDto detailToDto(UserDetails userDetails, Set<RoleEntity> roles) {
         UserDto userDto = new UserDto();
         userDto.setUsername(userDetails.getUsername());
+        userDto.setRoles(roles);
         return userDto;
     }
 
