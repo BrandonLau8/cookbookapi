@@ -34,7 +34,7 @@ public class UserEntity {
     private String password;
 
     //fetchtype eager because you always want roles to be shown
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "person_roles",
             joinColumns = @JoinColumn(name = "person_id", referencedColumnName = "id"),

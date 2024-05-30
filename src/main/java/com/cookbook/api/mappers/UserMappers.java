@@ -48,9 +48,6 @@ public class UserMappers {
         userEntity.setUsername(registerDto.getUsername());
         userEntity.setPassword(passwordConfig.passwordEncoder().encode(registerDto.getPassword()));
 
-        RoleEntity assignUserRole = new RoleEntity();
-        assignUserRole.setName(RoleType.USER);
-        roleRepository.save(assignUserRole);
 
         return userEntity;
     }

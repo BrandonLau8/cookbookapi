@@ -32,6 +32,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import javax.management.relation.Role;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
@@ -87,7 +88,7 @@ public class AuthServiceImpl implements AuthService {
                 Set<RoleEntity> roles = authenticated.getAuthorities().stream()
                                 .map(authority -> {
                                         RoleEntity roleEntity = new RoleEntity();
-                                        roleEntity.setName(RoleType.valueOf(authority.getAuthority()));
+                                        roleEntity.setName(String.valueOf(authority.getAuthority()));
                                         return roleEntity;
                                 })
                         .collect(Collectors.toSet());
@@ -105,17 +106,31 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public UserDto register(RegisterDto registerDto) {
 
+        //Check if username already exists or not
         if(userRepository.findByUsername(registerDto.getUsername()).isEmpty()) {
             UserEntity userEntity = userMappers.maptoEntity(registerDto);
 
-            Set<RoleEntity> roles = new HashSet<>();
-            List<RoleEntity> userRole = roleRepository.findByName(RoleType.USER);
+            //Get user role from role repository list
+            RoleEntity userRoles = roleRepository.findByName("ROLE_USER")
+                    .orElseThrow(()->{throw new RuntimeException("User role not found");});
 
-            userEntity.setRoles(roles);
+            //Add user role into role entity set for user entity
+//            Set<RoleEntity> userRolesSet = userRoles.stream()
+//                    .filter(role -> role.getName() == "ROLE_USER")
+//                    .collect(Collectors.toSet());
+
+            Set<RoleEntity> userRolesSet = new HashSet<>();
+            userRolesSet.add(userRoles);
+
+
+            userEntity.setRoles(userRolesSet);
 
             userRepository.save(userEntity);
 
-            return userMappers.maptoDto(userEntity);
+            UserDto userDto = userMappers.maptoDto(userEntity);
+            userDto.setRoles(userRolesSet);
+
+            return userDto;
         } else {
             throw new RegistrationException("User already exists", HttpStatus.BAD_REQUEST);
         }

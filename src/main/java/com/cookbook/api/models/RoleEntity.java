@@ -16,6 +16,10 @@ public class RoleEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Enumerated(EnumType.STRING)
-    private RoleType name;
+    @Column(nullable = false, unique = true)
+    private String name;
+
+    public RoleEntity(String name) {
+        this.name = name;
+    }
 }

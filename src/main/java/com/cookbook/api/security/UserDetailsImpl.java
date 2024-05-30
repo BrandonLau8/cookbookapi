@@ -32,7 +32,7 @@ public class UserDetailsImpl implements UserDetails {
         // roleStream contains: RoleEntity("ROLE_USER"), RoleEntity("ROLE_ADMIN")
         // authorityStream contains: SimpleGrantedAuthority("ROLE_USER"), SimpleGrantedAuthority("ROLE_ADMIN")
         this.roles = userEntity.getRoles().stream()
-                .map((role) -> new SimpleGrantedAuthority(role.getName().name()))
+                .map((role) -> new SimpleGrantedAuthority(role.getName()))
                 .collect(Collectors.toSet());
     }
 
